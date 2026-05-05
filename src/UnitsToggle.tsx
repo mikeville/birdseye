@@ -1,4 +1,3 @@
-import { PAPER, INK } from './style';
 import type { Units } from './units';
 
 // Two-segment km / mi pill. Sits below the LocateButton in the top-left
@@ -20,9 +19,9 @@ export function UnitsToggle({
         top: 186,
         left: 14,
         display: 'flex',
-        background: `${PAPER}cc`,
+        background: 'color-mix(in srgb, var(--paper) 80%, transparent)',
         backdropFilter: 'blur(4px)',
-        border: `1px solid ${INK}55`,
+        border: '1px solid color-mix(in srgb, var(--ink) 33%, transparent)',
         userSelect: 'none',
       }}
     >
@@ -31,7 +30,7 @@ export function UnitsToggle({
         active={units === 'metric'}
         onClick={() => onChange('metric')}
       />
-      <div style={{ width: 1, background: `${INK}55` }} />
+      <div style={{ width: 1, background: 'color-mix(in srgb, var(--ink) 33%, transparent)' }} />
       <Segment
         label="mi"
         active={units === 'imperial'}
@@ -61,7 +60,7 @@ function Segment({
         padding: '8px 14px',
         background: 'transparent',
         border: 'none',
-        color: INK,
+        color: 'var(--ink)',
         opacity: active ? 1 : 0.4,
         cursor: 'pointer',
         fontFamily:

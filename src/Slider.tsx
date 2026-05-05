@@ -3,7 +3,6 @@ import {
   altitudeFromSlider,
   sliderFromAltitude,
 } from './physics';
-import { INK, PAPER } from './style';
 import { formatTick, type Units } from './units';
 
 // Vertical slider on the right edge. Bottom = low altitude (1 km), top = high.
@@ -109,7 +108,7 @@ export function Slider({
             bottom: 0,
             width: 1,
             transform: 'translateX(-50%)',
-            background: INK,
+            background: 'var(--ink)',
             opacity: 0.35,
           }}
         />
@@ -134,7 +133,7 @@ export function Slider({
                 style={{
                   width: 8,
                   height: 1,
-                  background: INK,
+                  background: 'var(--ink)',
                   opacity: 0.45,
                 }}
               />
@@ -146,7 +145,7 @@ export function Slider({
                     '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif',
                   fontStyle: 'italic',
                   fontSize: 10,
-                  color: INK,
+                  color: 'var(--ink)',
                   opacity: 0.5,
                   fontVariantNumeric: 'tabular-nums',
                 }}
@@ -166,9 +165,9 @@ export function Slider({
             width: active ? 22 : 18,
             height: active ? 22 : 18,
             borderRadius: '50%',
-            background: PAPER,
-            border: `1.5px solid ${INK}`,
-            boxShadow: active ? `0 0 0 4px ${INK}1a` : 'none',
+            background: 'var(--paper)',
+            border: '1.5px solid var(--ink)',
+            boxShadow: active ? '0 0 0 4px color-mix(in srgb, var(--ink) 10%, transparent)' : 'none',
             transition:
               'width 120ms ease, height 120ms ease, box-shadow 120ms ease',
           }}

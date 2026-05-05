@@ -1,5 +1,3 @@
-import { PAPER, INK } from './style';
-
 // Opt-in geolocation button. Sits below the HUD card (top-left) and matches
 // its paper/italic aesthetic. The button stays visible after a successful
 // grant so it doubles as "re-center on me" — useful because the inertial
@@ -35,10 +33,10 @@ export function LocateButton({
         left: 14,
         minHeight: 44,
         padding: '10px 14px',
-        background: `${PAPER}cc`,
+        background: 'color-mix(in srgb, var(--paper) 80%, transparent)',
         backdropFilter: 'blur(4px)',
-        border: `1px solid ${INK}55`,
-        color: INK,
+        border: '1px solid color-mix(in srgb, var(--ink) 33%, transparent)',
+        color: 'var(--ink)',
         cursor: disabled ? 'default' : 'pointer',
         opacity: status === 'denied' ? 0.6 : 1,
         fontFamily:

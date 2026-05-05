@@ -1,6 +1,5 @@
-import { INK } from './style';
-
 export function Crosshair() {
+  const stroke = 'var(--ink)';
   return (
     <svg
       viewBox="0 0 32 32"
@@ -21,13 +20,13 @@ export function Crosshair() {
         cy={16}
         r={11}
         fill="none"
-        stroke={INK}
+        stroke={stroke}
         strokeWidth={0.9}
       />
-      <line x1={16} y1={4} x2={16} y2={11} stroke={INK} strokeWidth={0.9} />
-      <line x1={16} y1={21} x2={16} y2={28} stroke={INK} strokeWidth={0.9} />
-      <line x1={4} y1={16} x2={11} y2={16} stroke={INK} strokeWidth={0.9} />
-      <line x1={21} y1={16} x2={28} y2={16} stroke={INK} strokeWidth={0.9} />
+      <line x1={16} y1={4} x2={16} y2={11} stroke={stroke} strokeWidth={0.9} />
+      <line x1={16} y1={21} x2={16} y2={28} stroke={stroke} strokeWidth={0.9} />
+      <line x1={4} y1={16} x2={11} y2={16} stroke={stroke} strokeWidth={0.9} />
+      <line x1={21} y1={16} x2={28} y2={16} stroke={stroke} strokeWidth={0.9} />
     </svg>
   );
 }

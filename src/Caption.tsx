@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { PAPER, INK } from './style';
 import { formatSpeed, type Units } from './units';
 
 export function Caption({
@@ -20,10 +19,10 @@ export function Caption({
         right: 14 + 56, // leave room for the slider track on small screens
         maxWidth: 460,
         padding: '8px 32px 8px 12px',
-        background: `${PAPER}d0`,
+        background: 'color-mix(in srgb, var(--paper) 81%, transparent)',
         backdropFilter: 'blur(4px)',
-        border: `1px solid ${INK}22`,
-        color: INK,
+        border: '1px solid color-mix(in srgb, var(--ink) 13%, transparent)',
+        color: 'var(--ink)',
         fontFamily:
           '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif',
         fontStyle: 'italic',
@@ -50,7 +49,7 @@ export function Caption({
           height: 22,
           background: 'transparent',
           border: 'none',
-          color: INK,
+          color: 'var(--ink)',
           opacity: 0.5,
           fontSize: 16,
           lineHeight: 1,

@@ -17,18 +17,44 @@ import {
   getStartLocation,
   type StartLocation,
 } from './geolocation';
-import { buildStyle, PAPER } from './style';
+import { buildStyle, DEFAULT_COLORS, type Colors } from './style';
 import { HUD } from './HUD';
 import { Slider } from './Slider';
 import { Crosshair } from './Crosshair';
 import { Caption } from './Caption';
 import { LocateButton, type GeoStatus } from './LocateButton';
 import { UnitsToggle } from './UnitsToggle';
+import { DevPanel } from './DevPanel';
 import type { Units } from './units';
 
 const UNITS_STORAGE_KEY = 'birdseye:units';
+const COLORS_STORAGE_KEY = 'birdseye:colors';
+const HEX_RE = /^#[0-9a-fA-F]{6}$/;
+
 const isUnits = (v: string | null): v is Units =>
   v === 'metric' || v === 'imperial';
+
+const loadStoredColors = (): Colors => {
+  try {
+    const raw = typeof localStorage !== 'undefined'
+      ? localStorage.getItem(COLORS_STORAGE_KEY)
+      : null;
+    if (!raw) return DEFAULT_COLORS;
+    const parsed = JSON.parse(raw);
+    if (
+      parsed &&
+      typeof parsed.paper === 'string' &&
+      typeof parsed.ink === 'string' &&
+      HEX_RE.test(parsed.paper) &&
+      HEX_RE.test(parsed.ink)
+    ) {
+      return { paper: parsed.paper, ink: parsed.ink };
+    }
+  } catch {
+    // fall through to defaults
+  }
+  return DEFAULT_COLORS;
+};
 
 // Register the pmtiles protocol once for the lifetime of the page.
 maplibregl.addProtocol('pmtiles', new Protocol().tile);
@@ -55,6 +81,7 @@ export default function Birdseye() {
       : null;
     return isUnits(stored) ? stored : 'metric';
   });
+  const [colors, setColors] = useState<Colors>(loadStoredColors);
 
   // Persist the units preference across reloads.
   useEffect(() => {
@@ -64,6 +91,30 @@ export default function Birdseye() {
       // Quota exceeded or storage disabled — preference just won't persist.
     }
   }, [units]);
+
+  // Mirror colors to (a) CSS custom properties so the React UI bits update
+  // live, and (b) localStorage. The map style is updated separately in the
+  // [colors] effect below.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--paper', colors.paper);
+    root.style.setProperty('--ink', colors.ink);
+    try {
+      localStorage.setItem(COLORS_STORAGE_KEY, JSON.stringify(colors));
+    } catch {
+      // storage disabled — preference just won't persist
+    }
+  }, [colors]);
+
+  // Capture the latest colors for the mount effect (which is intentionally
+  // mount-only — we don't want to recreate the map every time colors change).
+  const colorsRef = useRef(colors);
+  colorsRef.current = colors;
+
+  // Skip the first colors-effect invocation: the mount effect already built
+  // the map with these colors, so calling setStyle on first render would be
+  // redundant work and could trigger a small flash before the first frame.
+  const colorsFirstRun = useRef(true);
 
   const altitudeRef = useRef(altitudeKm);
   altitudeRef.current = altitudeKm;
@@ -108,7 +159,7 @@ export default function Birdseye() {
     if (!containerRef.current || mapRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: buildStyle(),
+      style: buildStyle({ colors: colorsRef.current }),
       center: [0, 0],
       zoom: 2,
       interactive: false,
@@ -125,6 +176,20 @@ export default function Birdseye() {
       mapRef.current = null;
     };
   }, []);
+
+  // Apply color changes to the live map by rebuilding the style with the
+  // new palette. setStyle({ diff: true }) reconciles paint properties in
+  // place — the camera stays put, the drift loop keeps running, and the
+  // change feels instant.
+  useEffect(() => {
+    if (colorsFirstRun.current) {
+      colorsFirstRun.current = false;
+      return;
+    }
+    const map = mapRef.current;
+    if (!map) return;
+    map.setStyle(buildStyle({ colors }), { diff: true });
+  }, [colors]);
 
   // When `start` changes, re-center the camera and (re)start the drift loop.
   useEffect(() => {
@@ -177,7 +242,7 @@ export default function Birdseye() {
       style={{
         position: 'fixed',
         inset: 0,
-        background: PAPER,
+        background: 'var(--paper)',
         overflow: 'hidden',
       }}
     >
@@ -202,6 +267,7 @@ export default function Birdseye() {
       <UnitsToggle units={units} onChange={setUnits} />
       <Slider value={altitudeKm} onChange={setAltitudeKm} units={units} />
       <Caption speedKmh={speedKmh} units={units} />
+      <DevPanel colors={colors} onChange={setColors} />
     </div>
   );
 }

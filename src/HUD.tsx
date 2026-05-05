@@ -1,4 +1,3 @@
-import { PAPER, INK } from './style';
 import {
   formatAltitude,
   formatDistance,
@@ -28,10 +27,10 @@ export function HUD({
         top: 14,
         left: 14,
         padding: '10px 12px',
-        background: `${PAPER}cc`,
+        background: 'color-mix(in srgb, var(--paper) 80%, transparent)',
         backdropFilter: 'blur(4px)',
-        border: `1px solid ${INK}22`,
-        color: INK,
+        border: '1px solid color-mix(in srgb, var(--ink) 13%, transparent)',
+        color: 'var(--ink)',
         fontFamily:
           '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif',
         fontStyle: 'italic',

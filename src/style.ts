@@ -31,8 +31,14 @@ import { layers as basemapsLayers, namedFlavor } from '@protomaps/basemaps';
 import type { StyleSpecification, LayerSpecification } from 'maplibre-gl';
 
 // Paper background, soft black for marks. Slightly warm of pure black.
+// Used as defaults — runtime overrides flow through StyleOptions.colors so
+// the dev color panel can rebuild the style with different values without
+// touching source.
 export const PAPER = '#f4eee0';
 export const INK = '#2a2520';
+
+export type Colors = { paper: string; ink: string };
+export const DEFAULT_COLORS: Colors = { paper: PAPER, ink: INK };
 
 // Default fontstack — Protomaps' free-tier glyphs CDN. The italic-serif
 // substitution is deferred to the polish pass (BUILD_SPEC open question #2),
@@ -73,10 +79,13 @@ const NAME_FIELD: maplibregl.ExpressionSpecification = [
 
 export type StyleOptions = {
   pmtilesUrl?: string;
+  colors?: Partial<Colors>;
 };
 
 export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
   const url = resolveUrl(options.pmtilesUrl ?? DEFAULT_PMTILES_URL);
+  const paper = options.colors?.paper ?? PAPER;
+  const ink = options.colors?.ink ?? INK;
   const flavor = namedFlavor('white');
 
   // Build the base, then aggressively prune. The cast bridges a slight
@@ -88,19 +97,19 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
       if (l.id === 'background' && l.type === 'background') {
         return {
           ...l,
-          paint: { ...l.paint, 'background-color': PAPER },
+          paint: { ...l.paint, 'background-color': paper },
         };
       }
       if (l.id === 'earth' && l.type === 'fill') {
         return {
           ...l,
-          paint: { ...l.paint, 'fill-color': PAPER },
+          paint: { ...l.paint, 'fill-color': paper },
         };
       }
       if (l.id === 'water' && l.type === 'fill') {
         return {
           ...l,
-          paint: { ...l.paint, 'fill-color': PAPER },
+          paint: { ...l.paint, 'fill-color': paper },
         };
       }
       return l;
@@ -117,7 +126,7 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     minzoom: 3,
     filter: ['<=', ['get', 'kind_detail'], 2],
     paint: {
-      'line-color': INK,
+      'line-color': ink,
       'line-width': 0.5,
       'line-dasharray': [2, 3],
       'line-opacity': 0.4,
@@ -139,7 +148,7 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     minzoom: 5,
     filter: ['==', ['get', 'kind'], 'river'],
     paint: {
-      'line-color': INK,
+      'line-color': ink,
       'line-width': 0.6,
       'line-opacity': 0.5,
     },
@@ -149,25 +158,87 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     },
   };
 
-  // Dotted coastline overlay (existing behavior, kept). Source layer is
-  // `water` per Protomaps schema — render its outline as a thin dashed
-  // line in INK over the paper fill.
-  const coastline: LayerSpecification = {
-    id: 'coastline',
+  // Dashed coastline at high altitude only — fades out as the form-line
+  // hachure stack fades in (~z6–7). Below z6 the hachures aren't worth
+  // rendering (tile-clip artifacts at polygon edges become visible and
+  // the offset density gets noisy at world scale), so the dashed line
+  // carries the global view.
+  const coastlineDashed: LayerSpecification = {
+    id: 'coastline_dashed',
     type: 'line',
     source: SOURCE_NAME,
     'source-layer': 'water',
+    maxzoom: 7,
+    filter: ['all',
+      ['!=', ['get', 'kind'], 'river'],
+      ['!=', ['get', 'kind'], 'stream'],
+    ],
     paint: {
-      'line-color': INK,
+      'line-color': ink,
       'line-width': 1,
       'line-dasharray': [1, 2],
-      'line-opacity': 0.85,
+      'line-opacity': [
+        'interpolate', ['linear'], ['zoom'],
+        5.5, 0.85,
+        7, 0,
+      ],
     },
     layout: {
       'line-cap': 'round',
       'line-join': 'round',
     },
   };
+
+  // Form-line / sea-hachure stack. Renders the water polygon outline
+  // multiple times at increasing pixel offsets with tapering opacity.
+  // Polygon winding (MVT spec: outer rings CW, holes CCW) means a
+  // positive line-offset lands on the water side for both:
+  //   - islands (the shoreline is a hole in the ocean polygon, CCW →
+  //     positive offset goes outward from land into ocean)
+  //   - lakes (outer ring CW → positive offset goes inward into the
+  //     lake)
+  // The river/stream filter is required because the same source-layer
+  // contains line geometry that, if outlined here, produces a hachure
+  // ladder along one bank that looks broken.
+  //
+  // If you ever need to flip direction (engine update, tile re-encode
+  // with different winding), just negate the offsets.
+  const HACHURE_STEPS = [
+    { offset: 0,    width: 0.85, opacity: 0.95 },
+    { offset: 1.6,  width: 0.55, opacity: 0.55 },
+    { offset: 3.6,  width: 0.5,  opacity: 0.40 },
+    { offset: 6,    width: 0.5,  opacity: 0.30 },
+    { offset: 9,    width: 0.45, opacity: 0.22 },
+    { offset: 13,   width: 0.45, opacity: 0.16 },
+    { offset: 18,   width: 0.4,  opacity: 0.11 },
+    { offset: 24,   width: 0.4,  opacity: 0.07 },
+  ] as const;
+
+  const hachures: LayerSpecification[] = HACHURE_STEPS.map((s, i) => ({
+    id: `coastline_hachure_${i}`,
+    type: 'line',
+    source: SOURCE_NAME,
+    'source-layer': 'water',
+    minzoom: 6,
+    filter: ['all',
+      ['!=', ['get', 'kind'], 'river'],
+      ['!=', ['get', 'kind'], 'stream'],
+    ],
+    paint: {
+      'line-color': ink,
+      'line-width': s.width,
+      'line-offset': s.offset,
+      'line-opacity': [
+        'interpolate', ['linear'], ['zoom'],
+        5.5, 0,
+        6.5, s.opacity,
+      ],
+    },
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+  }));
 
   // Major roads only — motorway-class (kind=highway) and trunk/primary
   // (kind=major_road). Skipped tunnels and bridges/links to keep the line
@@ -186,7 +257,7 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
       ['in', ['get', 'kind'], ['literal', ['highway', 'major_road']]],
     ],
     paint: {
-      'line-color': INK,
+      'line-color': ink,
       'line-width': 0.5,
       'line-dasharray': [3, 2],
       'line-opacity': 0.45,
@@ -217,9 +288,9 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
       'text-padding': 4,
     },
     paint: {
-      'text-color': INK,
+      'text-color': ink,
       'text-opacity': 0.75,
-      'text-halo-color': PAPER,
+      'text-halo-color': paper,
       'text-halo-width': 1.2,
     },
   };
@@ -244,9 +315,9 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
       'text-padding': 4,
     },
     paint: {
-      'text-color': INK,
+      'text-color': ink,
       'text-opacity': 0.5,
-      'text-halo-color': PAPER,
+      'text-halo-color': paper,
       'text-halo-width': 1,
     },
   };
@@ -292,9 +363,9 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
       'text-anchor': 'center',
     },
     paint: {
-      'text-color': INK,
+      'text-color': ink,
       'text-opacity': 0.8,
-      'text-halo-color': PAPER,
+      'text-halo-color': paper,
       'text-halo-width': 1.2,
     },
   };
@@ -318,9 +389,9 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
       'symbol-placement': 'line',
     },
     paint: {
-      'text-color': INK,
+      'text-color': ink,
       'text-opacity': 0.55,
-      'text-halo-color': PAPER,
+      'text-halo-color': paper,
       'text-halo-width': 1,
     },
   };
@@ -342,7 +413,7 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
         9, 2.5,
         14, 4,
       ],
-      'circle-color': INK,
+      'circle-color': ink,
       'circle-opacity': 0.7,
     },
   };
@@ -371,9 +442,9 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
       'text-allow-overlap': false,
     },
     paint: {
-      'text-color': INK,
+      'text-color': ink,
       'text-opacity': 0.85,
-      'text-halo-color': PAPER,
+      'text-halo-color': paper,
       'text-halo-width': 1.4,
     },
   };
@@ -400,7 +471,8 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
       ...baseLayers,
       boundariesCountry,
       rivers,
-      coastline,
+      coastlineDashed,
+      ...hachures,
       roadsMajor,
       placesCountry,
       placesRegion,
