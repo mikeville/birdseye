@@ -4,24 +4,25 @@ import {
   sliderFromAltitude,
 } from './physics';
 import { INK, PAPER } from './style';
+import { formatTick, type Units } from './units';
 
 // Vertical slider on the right edge. Bottom = low altitude (1 km), top = high.
 // Range 0–100 maps log-scale to 1 → 10,000 km via altitudeFromSlider.
+//
+// Tick anchors stay in km — they represent physical altitude. The active
+// units toggle only changes how those anchors are *labeled*; the thumb's
+// physical position is unaffected.
 
-const TICKS = [
-  { km: 1, label: '1' },
-  { km: 10, label: '10' },
-  { km: 100, label: '100' },
-  { km: 1000, label: '1k' },
-  { km: 10000, label: '10k' },
-];
+const TICK_KM = [1, 10, 100, 1000, 10000];
 
 export function Slider({
   value,
   onChange,
+  units,
 }: {
   value: number;
   onChange: (km: number) => void;
+  units: Units;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
@@ -113,11 +114,11 @@ export function Slider({
           }}
         />
         {/* tick marks */}
-        {TICKS.map((tick) => {
-          const pct = sliderFromAltitude(tick.km); // 0..100
+        {TICK_KM.map((km) => {
+          const pct = sliderFromAltitude(km); // 0..100
           return (
             <div
-              key={tick.km}
+              key={km}
               style={{
                 position: 'absolute',
                 left: '50%',
@@ -150,7 +151,7 @@ export function Slider({
                   fontVariantNumeric: 'tabular-nums',
                 }}
               >
-                {tick.label}
+                {formatTick(km, units)}
               </span>
             </div>
           );

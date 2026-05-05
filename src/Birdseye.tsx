@@ -23,6 +23,12 @@ import { Slider } from './Slider';
 import { Crosshair } from './Crosshair';
 import { Caption } from './Caption';
 import { LocateButton, type GeoStatus } from './LocateButton';
+import { UnitsToggle } from './UnitsToggle';
+import type { Units } from './units';
+
+const UNITS_STORAGE_KEY = 'birdseye:units';
+const isUnits = (v: string | null): v is Units =>
+  v === 'metric' || v === 'imperial';
 
 // Register the pmtiles protocol once for the lifetime of the page.
 maplibregl.addProtocol('pmtiles', new Protocol().tile);
@@ -43,6 +49,21 @@ export default function Birdseye() {
   const [liveLon, setLiveLon] = useState<number | null>(null);
   const [speedKmh, setSpeedKmh] = useState(0);
   const [geoStatus, setGeoStatus] = useState<GeoStatus>('idle');
+  const [units, setUnits] = useState<Units>(() => {
+    const stored = typeof localStorage !== 'undefined'
+      ? localStorage.getItem(UNITS_STORAGE_KEY)
+      : null;
+    return isUnits(stored) ? stored : 'metric';
+  });
+
+  // Persist the units preference across reloads.
+  useEffect(() => {
+    try {
+      localStorage.setItem(UNITS_STORAGE_KEY, units);
+    } catch {
+      // Quota exceeded or storage disabled — preference just won't persist.
+    }
+  }, [units]);
 
   const altitudeRef = useRef(altitudeKm);
   altitudeRef.current = altitudeKm;
@@ -171,14 +192,16 @@ export default function Birdseye() {
         speedKmh={speedKmh}
         latDeg={start.lat}
         lonDeg={liveLon ?? start.lon}
+        units={units}
       />
       <LocateButton
         status={geoStatus}
         hasGeo={start.source === 'geo'}
         onClick={onLocate}
       />
-      <Slider value={altitudeKm} onChange={setAltitudeKm} />
-      <Caption speedKmh={speedKmh} />
+      <UnitsToggle units={units} onChange={setUnits} />
+      <Slider value={altitudeKm} onChange={setAltitudeKm} units={units} />
+      <Caption speedKmh={speedKmh} units={units} />
     </div>
   );
 }

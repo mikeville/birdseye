@@ -1,10 +1,10 @@
 import { PAPER, INK } from './style';
-
-const fmt = (n: number, dp = 1) =>
-  n.toLocaleString(undefined, {
-    minimumFractionDigits: dp,
-    maximumFractionDigits: dp,
-  });
+import {
+  formatAltitude,
+  formatDistance,
+  formatSpeed,
+  type Units,
+} from './units';
 
 export function HUD({
   altitudeKm,
@@ -12,12 +12,14 @@ export function HUD({
   speedKmh,
   latDeg,
   lonDeg,
+  units,
 }: {
   altitudeKm: number;
   fovKm: number;
   speedKmh: number;
   latDeg: number;
   lonDeg: number;
+  units: Units;
 }) {
   return (
     <div
@@ -40,9 +42,9 @@ export function HUD({
         userSelect: 'none',
       }}
     >
-      <Row label="altitude" value={`${fmt(altitudeKm, altitudeKm < 10 ? 2 : 1)} km`} />
-      <Row label="field of view" value={`${fmt(fovKm)} km`} />
-      <Row label="ground speed" value={`${Math.round(speedKmh)} km/h`} />
+      <Row label="altitude" value={formatAltitude(altitudeKm, units)} />
+      <Row label="field of view" value={formatDistance(fovKm, units)} />
+      <Row label="ground speed" value={formatSpeed(speedKmh, units)} />
       <Row
         label="position"
         value={`${formatLat(latDeg)} ${formatLon(lonDeg)}`}

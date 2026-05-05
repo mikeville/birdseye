@@ -1,10 +1,16 @@
 import { useState } from 'react';
 import { PAPER, INK } from './style';
+import { formatSpeed, type Units } from './units';
 
-export function Caption({ speedKmh }: { speedKmh: number }) {
+export function Caption({
+  speedKmh,
+  units,
+}: {
+  speedKmh: number;
+  units: Units;
+}) {
   const [dismissed, setDismissed] = useState(false);
   if (dismissed) return null;
-  const speed = Math.round(speedKmh).toLocaleString();
   return (
     <div
       style={{
@@ -29,7 +35,7 @@ export function Caption({ speedKmh }: { speedKmh: number }) {
     >
       You're stationary. Earth is rotating beneath you at{' '}
       <strong style={{ fontStyle: 'normal', fontVariantNumeric: 'tabular-nums' }}>
-        {speed} km/h
+        {formatSpeed(speedKmh, units)}
       </strong>
       .
       <button
