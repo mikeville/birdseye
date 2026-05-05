@@ -2,7 +2,7 @@
 
 Mobile-first interactive prototype that makes you viscerally feel Earth's rotation. You look straight down from a viewpoint **fixed in inertial space**; the ground rotates past beneath at your actual latitude. One control: a vertical altitude slider that widens or narrows the field of view. Low altitude = ground whips by. High altitude = planet turns gently. Same physics; altitude is the perceptual knob.
 
-> **v1 build.** See `Claude Cowork research/BUILD_SPEC.md` for the full spec, `Claude Cowork research/maps-research.md` for the architecture rationale, and `Claude Cowork research/PROJECT-CONTEXT.md` for the project status.
+> **v1 build.** Design context (build spec, maps research, project status) lives in the project workspace at `../context/` — local-only, not committed to this repo.
 
 ## Stack
 
