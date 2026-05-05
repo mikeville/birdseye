@@ -1,0 +1,59 @@
+{
+  "type": "FeatureCollection",
+  "name": "globally_recognizable_landmarks",
+  "_note": "Hand-curated set of globally recognizable landmarks. Each feature has properties.name (display label) and properties.kind ('landmark'). Coordinates are [lon, lat] in WGS84. Keep this list small (~50) so it doesn't crowd the map at low altitude.",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Eiffel Tower", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [2.2945, 48.8584] } },
+    { "type": "Feature", "properties": { "name": "Stonehenge", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-1.8262, 51.1789] } },
+    { "type": "Feature", "properties": { "name": "Big Ben", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-0.1246, 51.5007] } },
+    { "type": "Feature", "properties": { "name": "Colosseum", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [12.4924, 41.8902] } },
+    { "type": "Feature", "properties": { "name": "Acropolis", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [23.7257, 37.9715] } },
+    { "type": "Feature", "properties": { "name": "Hagia Sophia", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [28.9802, 41.0086] } },
+    { "type": "Feature", "properties": { "name": "Sagrada Família", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [2.1744, 41.4036] } },
+    { "type": "Feature", "properties": { "name": "Brandenburg Gate", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [13.3777, 52.5163] } },
+    { "type": "Feature", "properties": { "name": "Kremlin", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [37.6173, 55.7520] } },
+    { "type": "Feature", "properties": { "name": "Leaning Tower of Pisa", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [10.3966, 43.7230] } },
+
+    { "type": "Feature", "properties": { "name": "Pyramids of Giza", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [31.1342, 29.9792] } },
+    { "type": "Feature", "properties": { "name": "Petra", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [35.4444, 30.3285] } },
+    { "type": "Feature", "properties": { "name": "Burj Khalifa", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [55.2744, 25.1972] } },
+    { "type": "Feature", "properties": { "name": "Mecca (Kaaba)", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [39.8262, 21.4225] } },
+    { "type": "Feature", "properties": { "name": "Mt. Kilimanjaro", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [37.3556, -3.0674] } },
+    { "type": "Feature", "properties": { "name": "Victoria Falls", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [25.8572, -17.9243] } },
+    { "type": "Feature", "properties": { "name": "Table Mountain", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [18.4055, -33.9628] } },
+
+    { "type": "Feature", "properties": { "name": "Taj Mahal", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [78.0421, 27.1751] } },
+    { "type": "Feature", "properties": { "name": "Mt. Everest", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [86.9250, 27.9881] } },
+    { "type": "Feature", "properties": { "name": "Great Wall (Badaling)", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [116.0174, 40.3587] } },
+    { "type": "Feature", "properties": { "name": "Forbidden City", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [116.3972, 39.9163] } },
+    { "type": "Feature", "properties": { "name": "Mt. Fuji", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [138.7274, 35.3606] } },
+    { "type": "Feature", "properties": { "name": "Tokyo Tower", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [139.7454, 35.6586] } },
+    { "type": "Feature", "properties": { "name": "Angkor Wat", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [103.8670, 13.4125] } },
+    { "type": "Feature", "properties": { "name": "Marina Bay Sands", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [103.8607, 1.2834] } },
+
+    { "type": "Feature", "properties": { "name": "Sydney Opera House", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [151.2153, -33.8568] } },
+    { "type": "Feature", "properties": { "name": "Uluru", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [131.0369, -25.3444] } },
+    { "type": "Feature", "properties": { "name": "Easter Island", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-109.3497, -27.1127] } },
+
+    { "type": "Feature", "properties": { "name": "Statue of Liberty", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-74.0445, 40.6892] } },
+    { "type": "Feature", "properties": { "name": "Empire State Building", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-73.9857, 40.7484] } },
+    { "type": "Feature", "properties": { "name": "White House", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-77.0365, 38.8977] } },
+    { "type": "Feature", "properties": { "name": "Mt. Rushmore", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-103.4591, 43.8791] } },
+    { "type": "Feature", "properties": { "name": "Grand Canyon", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-112.1130, 36.0544] } },
+    { "type": "Feature", "properties": { "name": "Yellowstone (Old Faithful)", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-110.8281, 44.4605] } },
+    { "type": "Feature", "properties": { "name": "Niagara Falls", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-79.0742, 43.0828] } },
+    { "type": "Feature", "properties": { "name": "Golden Gate Bridge", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-122.4783, 37.8199] } },
+    { "type": "Feature", "properties": { "name": "Hollywood Sign", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-118.3215, 34.1341] } },
+    { "type": "Feature", "properties": { "name": "Space Needle", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-122.3493, 47.6205] } },
+    { "type": "Feature", "properties": { "name": "CN Tower", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-79.3871, 43.6426] } },
+
+    { "type": "Feature", "properties": { "name": "Chichen Itza", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-88.5678, 20.6843] } },
+    { "type": "Feature", "properties": { "name": "Teotihuacan", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-98.8438, 19.6925] } },
+    { "type": "Feature", "properties": { "name": "Panama Canal", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-79.5183, 9.0815] } },
+
+    { "type": "Feature", "properties": { "name": "Machu Picchu", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-72.5450, -13.1631] } },
+    { "type": "Feature", "properties": { "name": "Christ the Redeemer", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-43.2105, -22.9519] } },
+    { "type": "Feature", "properties": { "name": "Iguazu Falls", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-54.4367, -25.6953] } },
+    { "type": "Feature", "properties": { "name": "Galápagos Islands", "kind": "landmark" }, "geometry": { "type": "Point", "coordinates": [-90.9656, -0.9538] } }
+  ]
+}

@@ -1,0 +1,41 @@
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: #f4eee0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family:
+    'Iowan Old Style',
+    'Palatino Linotype',
+    Palatino,
+    Georgia,
+    serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* MapLibre's canvas should fill the map container with no scrollbars. */
+.maplibregl-canvas {
+  outline: none;
+}
+
+/* Prevent the iOS double-tap-zoom while interacting with the slider/map. */
+html,
+body {
+  touch-action: manipulation;
+}

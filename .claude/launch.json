@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "birdseye",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "birdseye", "dev"],
+      "port": 5180,
+      "autoPort": true
+    }
+  ]
+}
