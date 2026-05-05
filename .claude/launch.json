@@ -4,7 +4,7 @@
     {
       "name": "birdseye",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--dir", "birdseye", "dev"],
+      "runtimeArgs": ["dev"],
       "port": 5180,
       "autoPort": true
     }
