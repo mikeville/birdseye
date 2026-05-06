@@ -17,7 +17,8 @@ import {
   getStartLocation,
   type StartLocation,
 } from './geolocation';
-import { buildStyle, DEFAULT_COLORS, type Colors } from './style';
+import { buildStyle, DEFAULT_COLORS, WATER_PATTERN_ID, type Colors } from './style';
+import { makeStipplePattern } from './waterPattern';
 import { HUD } from './HUD';
 import { Slider } from './Slider';
 import { Crosshair } from './Crosshair';
@@ -171,6 +172,28 @@ export default function Birdseye() {
     if (import.meta.env.DEV) {
       (window as unknown as { __map?: unknown }).__map = map;
     }
+
+    // Register the runtime-generated water stipple pattern. Re-registers
+    // on every style.load — that fires both for the initial style and
+    // after every setStyle (e.g. when DevPanel changes paper/ink), so
+    // the pattern is always in sync with the current palette.
+    const onStyleLoad = () => {
+      const c = colorsRef.current;
+      try {
+        if (map.hasImage(WATER_PATTERN_ID)) map.removeImage(WATER_PATTERN_ID);
+        map.addImage(
+          WATER_PATTERN_ID,
+          makeStipplePattern(c.ink, c.paper),
+          { pixelRatio: 2 },
+        );
+      } catch {
+        // Map may have been disposed mid-event; the layer falls back to
+        // fill-color until the next style.load.
+      }
+    };
+    map.on('style.load', onStyleLoad);
+    if (map.isStyleLoaded()) onStyleLoad();
+
     return () => {
       map.remove();
       mapRef.current = null;

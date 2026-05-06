@@ -63,6 +63,10 @@ const resolveUrl = (u: string): string =>
 const SOURCE_NAME = 'protomaps';
 const LANDMARKS_SOURCE = 'landmarks';
 
+// Image id for the runtime-generated water stipple. Registered by
+// Birdseye.tsx via map.addImage on style.load — see waterPattern.ts.
+export const WATER_PATTERN_ID = 'water-stipple';
+
 // Layer ids from @protomaps/basemaps to KEEP from the base flavor. Everything
 // else is dropped; the recognizability detail (rivers, roads, places,
 // boundaries) is added back below as bespoke definitions so we have full
@@ -107,9 +111,17 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
         };
       }
       if (l.id === 'water' && l.type === 'fill') {
+        // Stippled water — see Birdseye.tsx for image registration.
+        // The pattern bakes in PAPER + INK, so the layer is self-
+        // contained. fill-color is left in place as a fallback during
+        // the brief window before the pattern is registered.
         return {
           ...l,
-          paint: { ...l.paint, 'fill-color': paper },
+          paint: {
+            ...l.paint,
+            'fill-color': paper,
+            'fill-pattern': WATER_PATTERN_ID,
+          },
         };
       }
       return l;
@@ -127,8 +139,8 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     filter: ['<=', ['get', 'kind_detail'], 2],
     paint: {
       'line-color': ink,
-      'line-width': 0.5,
-      'line-dasharray': [2, 3],
+      'line-width': 0.9,
+      'line-dasharray': [2.4, 3],
       'line-opacity': 0.4,
     },
     layout: {
@@ -149,7 +161,7 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     filter: ['==', ['get', 'kind'], 'river'],
     paint: {
       'line-color': ink,
-      'line-width': 0.6,
+      'line-width': 1,
       'line-opacity': 0.5,
     },
     layout: {
@@ -158,11 +170,10 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     },
   };
 
-  // Dashed coastline at high altitude only — fades out as the form-line
-  // hachure stack fades in (~z6–7). Below z6 the hachures aren't worth
-  // rendering (tile-clip artifacts at polygon edges become visible and
-  // the offset density gets noisy at world scale), so the dashed line
-  // carries the global view.
+  // Dashed coastline carries the global view (high altitude / low zoom)
+  // and fades out as the solid coastline + hachure stack fade in around
+  // z6–7. Below z6 the hachures get too noisy at world scale and tile
+  // boundaries can poke through.
   const coastlineDashed: LayerSpecification = {
     id: 'coastline_dashed',
     type: 'line',
@@ -175,11 +186,11 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     ],
     paint: {
       'line-color': ink,
-      'line-width': 1,
-      'line-dasharray': [1, 2],
+      'line-width': 1.4,
+      'line-dasharray': [1.2, 2.2],
       'line-opacity': [
         'interpolate', ['linear'], ['zoom'],
-        5.5, 0.85,
+        5.5, 0.9,
         7, 0,
       ],
     },
@@ -189,33 +200,14 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     },
   };
 
-  // Form-line / sea-hachure stack. Renders the water polygon outline
-  // multiple times at increasing pixel offsets with tapering opacity.
-  // Polygon winding (MVT spec: outer rings CW, holes CCW) means a
-  // positive line-offset lands on the water side for both:
-  //   - islands (the shoreline is a hole in the ocean polygon, CCW →
-  //     positive offset goes outward from land into ocean)
-  //   - lakes (outer ring CW → positive offset goes inward into the
-  //     lake)
-  // The river/stream filter is required because the same source-layer
-  // contains line geometry that, if outlined here, produces a hachure
-  // ladder along one bank that looks broken.
-  //
-  // If you ever need to flip direction (engine update, tile re-encode
-  // with different winding), just negate the offsets.
-  const HACHURE_STEPS = [
-    { offset: 0,    width: 0.85, opacity: 0.95 },
-    { offset: 1.6,  width: 0.55, opacity: 0.55 },
-    { offset: 3.6,  width: 0.5,  opacity: 0.40 },
-    { offset: 6,    width: 0.5,  opacity: 0.30 },
-    { offset: 9,    width: 0.45, opacity: 0.22 },
-    { offset: 13,   width: 0.45, opacity: 0.16 },
-    { offset: 18,   width: 0.4,  opacity: 0.11 },
-    { offset: 24,   width: 0.4,  opacity: 0.07 },
-  ] as const;
-
-  const hachures: LayerSpecification[] = HACHURE_STEPS.map((s, i) => ({
-    id: `coastline_hachure_${i}`,
+  // Solid coastline (offset 0). Slightly thicker than the dashed
+  // pre-z6 baseline so its rounded joins read as humanistic curves at
+  // sharp polygon corners. This is a stroke-level approximation of
+  // corner-rounding — true constant-pixel rounding (e.g. ~24px radius
+  // independent of stroke width) would require geometry-level fillet
+  // smoothing, which is a separate effort.
+  const coastlineSolid: LayerSpecification = {
+    id: 'coastline_solid',
     type: 'line',
     source: SOURCE_NAME,
     'source-layer': 'water',
@@ -226,19 +218,13 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     ],
     paint: {
       'line-color': ink,
-      'line-width': s.width,
-      'line-offset': s.offset,
-      'line-opacity': [
-        'interpolate', ['linear'], ['zoom'],
-        5.5, 0,
-        6.5, s.opacity,
-      ],
+      'line-width': 1.6,
     },
     layout: {
       'line-cap': 'round',
       'line-join': 'round',
     },
-  }));
+  };
 
   // Major roads only — motorway-class (kind=highway) and trunk/primary
   // (kind=major_road). Skipped tunnels and bridges/links to keep the line
@@ -258,8 +244,8 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     ],
     paint: {
       'line-color': ink,
-      'line-width': 0.5,
-      'line-dasharray': [3, 2],
+      'line-width': 0.9,
+      'line-dasharray': [2.6, 2.4],
       'line-opacity': 0.45,
     },
     layout: {
@@ -472,7 +458,7 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
       boundariesCountry,
       rivers,
       coastlineDashed,
-      ...hachures,
+      coastlineSolid,
       roadsMajor,
       placesCountry,
       placesRegion,
