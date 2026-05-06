@@ -1,7 +1,8 @@
 // Try to get the user's real latitude/longitude. On any failure or denial,
-// fall back to Istanbul (~41°N, 29°E). Going westward from Istanbul sweeps
-// the camera over Bulgaria → Greece → Italy → Iberia → Atlantic → Americas
-// → Pacific → Asia: lots of recognizable land for the visceral payoff.
+// fall back to Athens (~38°N, 24°E). Drifting westward from Athens sweeps
+// the camera over Italy → Iberia → Atlantic → Americas → Pacific → Asia
+// → Caucasus → back to Greece: lots of recognizable land for the visceral
+// payoff.
 
 export type StartLocation = {
   lat: number;
@@ -10,8 +11,8 @@ export type StartLocation = {
 };
 
 export const FALLBACK_LOCATION: StartLocation = {
-  lat: 41.0082,
-  lon: 28.9784,
+  lat: 37.9838,
+  lon: 23.7275,
   source: 'fallback',
 };
 

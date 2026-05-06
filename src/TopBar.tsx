@@ -70,7 +70,7 @@ export function TopBar({
           letterSpacing: 0.1,
         }}
       >
-        You're stationary. Earth is rotating beneath you.
+        If you stopped spinning with the earth, how fast would the ground move beneath you?
       </h1>
       <div className="topbar-row">
         <div

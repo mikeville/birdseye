@@ -11,11 +11,15 @@
 //      altitude drops below ~500 km without overwhelming high-altitude
 //      views with inherited detail. Each new layer has an explicit
 //      `minzoom` so it stays out of higher altitudes:
-//        z3+:  country admin lines (subtle dashed)
+//        z3+:   country admin lines (subtle dashed),
+//               landcover outlines (broad regional swaths)
 //        z3.5+: region (state/province) labels
-//        z5+:  rivers (line), city/locality labels
-//        z6+:  river name labels, landmark labels
-//        z9+:  major roads (motorway/trunk only, dashed)
+//        z4+:   region (state/province) admin lines (lighter dashed),
+//               named water bodies (oceans, seas, lakes, bays)
+//        z5+:   rivers (line), city/locality labels, landuse outlines
+//               (parks, forests, residential, industrial, airports)
+//        z6+:   river name labels, landmark labels
+//        z9+:   major roads (motorway/trunk only, dashed)
 //   5. Add a curated landmarks GeoJSON overlay for ~50 globally
 //      recognizable places (Stonehenge, Mt. Fuji, etc.) — Protomaps' POIs
 //      are too noisy to filter to "globally recognizable", so we ship a
@@ -144,7 +148,8 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
 
   // Country admin lines — subtle dashed, just enough to suggest where one
   // country ends and another begins. kind_detail<=2 selects country
-  // borders only (3+ is state/province, omitted for the paper aesthetic).
+  // borders only; state/province lines are rendered as a separate, lighter
+  // layer below so countries stay the dominant boundary signal.
   const boundariesCountry: LayerSpecification = {
     id: 'boundaries_country',
     type: 'line',
@@ -157,6 +162,31 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
       'line-width': 0.9,
       'line-dasharray': [2.4, 3],
       'line-opacity': 0.4,
+    },
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+  };
+
+  // State / province / region admin lines — same dash rhythm as country
+  // borders so the visual language reads as consistent, but lighter weight
+  // and lower opacity so countries remain the dominant boundary. Global by
+  // construction: Protomaps carries kind_detail>=3 wherever OSM tags an
+  // admin-level subdivision (US states, Canadian provinces, Mexican states,
+  // also Australian states, Brazilian states, German Bundesländer, etc.).
+  const boundariesRegion: LayerSpecification = {
+    id: 'boundaries_region',
+    type: 'line',
+    source: SOURCE_NAME,
+    'source-layer': 'boundaries',
+    minzoom: 4,
+    filter: ['>=', ['get', 'kind_detail'], 3],
+    paint: {
+      'line-color': ink,
+      'line-width': 0.6,
+      'line-dasharray': [2.4, 3],
+      'line-opacity': 0.25,
     },
     layout: {
       'line-cap': 'round',
@@ -243,6 +273,67 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
         8,  ['*', 1.4, sizeMultiplier],
         12, ['*', 1.6, sizeMultiplier],
       ],
+    },
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+  };
+
+  // Landcover — broad regional swaths (urban_area, farmland, forest,
+  // grassland) as subtle outlines. The macro layer that hints at where
+  // cities, farms, and forests are without naming them. Outline-only to
+  // stay in the paper aesthetic (no fills, no gradations).
+  const landcover: LayerSpecification = {
+    id: 'landcover',
+    type: 'line',
+    source: SOURCE_NAME,
+    'source-layer': 'landcover',
+    minzoom: 3,
+    filter: [
+      'in',
+      ['get', 'kind'],
+      ['literal', ['urban_area', 'farmland', 'forest', 'grassland']],
+    ],
+    paint: {
+      'line-color': ink,
+      'line-width': 0.35,
+      'line-opacity': 0.18,
+    },
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+  };
+
+  // Landuse outlines — parks, forests, residential, industrial, farmland,
+  // airports. Subtle thin outline only (no fill, to stay in the paper
+  // aesthetic and not compete with the water stipple). The mix of natural
+  // and built kinds is intentional: at low altitude over a city, what
+  // gives you a sense of place is district shapes (residential blocks,
+  // industrial zones) just as much as parks. Skipped grassland / meadow /
+  // sand / bare_rock — these add noise without orienting the eye.
+  const landuseDetail: LayerSpecification = {
+    id: 'landuse_detail',
+    type: 'line',
+    source: SOURCE_NAME,
+    'source-layer': 'landuse',
+    minzoom: 5,
+    filter: [
+      'in',
+      ['get', 'kind'],
+      ['literal', [
+        'park', 'national_park', 'nature_reserve',
+        'forest', 'wood', 'scrub', 'wetland',
+        'residential', 'industrial', 'commercial',
+        'farmland', 'military',
+        'aerodrome', 'airfield',
+      ]],
+    ],
+    paint: {
+      'line-color': ink,
+      'line-width': 0.4,
+      'line-opacity': 0.22,
     },
     layout: {
       'line-cap': 'round',
@@ -379,6 +470,43 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     },
   };
 
+  // Named water bodies — oceans, seas, bays, gulfs, straits, lakes.
+  // Italic, recessive, paired with the river labels but earlier zoom
+  // because oceans/seas need to anchor the global view. Per-feature
+  // min_zoom drives importance ranking via symbol-sort-key.
+  const placesWater: LayerSpecification = {
+    id: 'places_water',
+    type: 'symbol',
+    source: SOURCE_NAME,
+    'source-layer': 'water',
+    minzoom: 4,
+    filter: [
+      'all',
+      ['has', 'name'],
+      ['in', ['get', 'kind'], ['literal', ['ocean', 'sea', 'bay', 'gulf', 'strait', 'lake']]],
+    ],
+    layout: {
+      'text-field': NAME_FIELD,
+      'text-font': ITALIC_FONT,
+      'symbol-sort-key': ['coalesce', ['get', 'pmap:min_zoom'], ['get', 'min_zoom'], 10],
+      'text-size': [
+        'interpolate', ['linear'], ['zoom'],
+        4, 9,
+        8, 11,
+        12, 13,
+      ],
+      'text-letter-spacing': 0.06,
+      'text-max-width': 8,
+      'text-padding': 4,
+    },
+    paint: {
+      'text-color': ink,
+      'text-opacity': 0.5,
+      'text-halo-color': paper,
+      'text-halo-width': 1,
+    },
+  };
+
   // River name labels — Protomaps' built-in `min_zoom` per feature handles
   // importance ranking, so we don't need to maintain an allowlist of
   // famous rivers. Only label at z6+ so high-altitude views stay clean.
@@ -478,13 +606,17 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     },
     layers: [
       ...baseLayers,
+      landcover,
+      boundariesRegion,
       boundariesCountry,
       rivers,
       coastline,
+      landuseDetail,
       roadsMajor,
       placesCountry,
       placesRegion,
       placesLocality,
+      placesWater,
       riversLabel,
       landmarksPoints,
       landmarksLabels,
