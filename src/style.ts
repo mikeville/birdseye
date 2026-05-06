@@ -63,9 +63,16 @@ const resolveUrl = (u: string): string =>
 const SOURCE_NAME = 'protomaps';
 const LANDMARKS_SOURCE = 'landmarks';
 
-// Image id for the runtime-generated water stipple. Registered by
-// Birdseye.tsx via map.addImage on style.load — see waterPattern.ts.
+// Image ids for the runtime-generated water stipple. Two tiers — a
+// finer / denser pattern for low zoom (global view) and the regular
+// pattern for everything else. fill-pattern is screen-space anchored
+// in MapLibre, so a single pattern at the same px density reads as
+// "discrete dots" at the global scale and as "texture" up close. The
+// tier switch matches the zoom level where that perceptual flip
+// happens. Both patterns are registered by Birdseye.tsx on style.load.
 export const WATER_PATTERN_ID = 'water-stipple';
+export const WATER_PATTERN_FINE_ID = 'water-stipple-fine';
+export const WATER_PATTERN_TIER_ZOOM = 5;
 
 // Layer ids from @protomaps/basemaps to KEEP from the base flavor. Everything
 // else is dropped; the recognizability detail (rivers, roads, places,
@@ -112,15 +119,23 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
       }
       if (l.id === 'water' && l.type === 'fill') {
         // Stippled water — see Birdseye.tsx for image registration.
-        // The pattern bakes in PAPER + INK, so the layer is self-
-        // contained. fill-color is left in place as a fallback during
-        // the brief window before the pattern is registered.
+        // Two-tier pattern: fine at low zoom, regular at higher zoom,
+        // because fill-pattern is screen-space and a single density
+        // can't read correctly at both global and close-in scales.
+        // fill-color stays as a fallback during the brief window
+        // before the pattern is registered.
         return {
           ...l,
           paint: {
             ...l.paint,
             'fill-color': paper,
-            'fill-pattern': WATER_PATTERN_ID,
+            'fill-pattern': [
+              'step',
+              ['zoom'],
+              WATER_PATTERN_FINE_ID,
+              WATER_PATTERN_TIER_ZOOM,
+              WATER_PATTERN_ID,
+            ] as unknown as string,
           },
         };
       }
@@ -128,8 +143,8 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     });
 
   // Country admin lines — subtle dashed, just enough to suggest where one
-  // country ends and another begins. kind_detail<=2 selects country borders
-  // only (3+ is state/province, which we omit for the paper aesthetic).
+  // country ends and another begins. kind_detail<=2 selects country
+  // borders only (3+ is state/province, omitted for the paper aesthetic).
   const boundariesCountry: LayerSpecification = {
     id: 'boundaries_country',
     type: 'line',
@@ -149,9 +164,7 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     },
   };
 
-  // Major rivers (line geometry). Protomaps' default `water_river` layer
-  // has minzoom:9 — we override to z5 so rivers appear as altitude drops
-  // below ~1000 km. They're still kept thin and translucent.
+  // Major rivers (line geometry).
   const rivers: LayerSpecification = {
     id: 'rivers',
     type: 'line',
@@ -170,28 +183,65 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     },
   };
 
-  // Dashed coastline carries the global view (high altitude / low zoom)
-  // and fades out as the solid coastline + hachure stack fade in around
-  // z6–7. Below z6 the hachures get too noisy at world scale and tile
-  // boundaries can poke through.
-  const coastlineDashed: LayerSpecification = {
-    id: 'coastline_dashed',
+  // Solid coastline at every zoom. Two stacked interpolations:
+  //   1. Zoom drives the base stroke width — globe views stay light,
+  //      close-in views get a substantial shore.
+  //   2. Per-feature size multiplier scales that stroke down for tiny
+  //      lakes / ponds, so a 4-pixel pond doesn't get the same heavy
+  //      outline as the Pacific.
+  //
+  // Size hint priority:
+  //   a) pmap:min_zoom — Protomaps v4 daily build's importance value
+  //      (lower = more prominent / larger).
+  //   b) min_zoom — older Protomaps schemas use the un-prefixed form.
+  //   c) `kind` — coarsest fallback when no size property is present
+  //      on water polygons. Ocean/sea read as huge, lakes medium,
+  //      `water` (small bodies) thin, swimming pools tiny.
+  //
+  // Implemented as inner multiplication at each zoom stop because
+  // MapLibre's interpolate must be the outer expression for zoom.
+  const minZoomToWidth: maplibregl.ExpressionSpecification = [
+    'interpolate', ['linear'],
+    ['coalesce', ['get', 'pmap:min_zoom'], ['get', 'min_zoom'], 0],
+    0, 2.0,    // ocean / great lake — full width
+    9, 0.75,   // big lakes
+    10, 0.5,  // medium lakes
+    13, 0.25,  // tiny ponds — quarter weight
+  ] as unknown as maplibregl.ExpressionSpecification;
+
+  const sizeMultiplier: maplibregl.ExpressionSpecification = [
+    'case',
+    ['any', ['has', 'pmap:min_zoom'], ['has', 'min_zoom']],
+    minZoomToWidth,
+    [
+      'match',
+      ['get', 'kind'],
+      'ocean', 1.0,
+      'sea', 1.0,
+      'lake', 0.7,
+      'water', 0.45,
+      'swimming_pool', 0.3,
+      0.6,
+    ],
+  ] as unknown as maplibregl.ExpressionSpecification;
+
+  const coastline: LayerSpecification = {
+    id: 'coastline',
     type: 'line',
     source: SOURCE_NAME,
     'source-layer': 'water',
-    maxzoom: 7,
     filter: ['all',
       ['!=', ['get', 'kind'], 'river'],
       ['!=', ['get', 'kind'], 'stream'],
     ],
     paint: {
       'line-color': ink,
-      'line-width': 1.4,
-      'line-dasharray': [1.2, 2.2],
-      'line-opacity': [
+      'line-width': [
         'interpolate', ['linear'], ['zoom'],
-        5.5, 0.9,
-        7, 0,
+        2,  ['*', 0.7, sizeMultiplier],
+        5,  ['*', 1.0, sizeMultiplier],
+        8,  ['*', 1.4, sizeMultiplier],
+        12, ['*', 1.6, sizeMultiplier],
       ],
     },
     layout: {
@@ -200,36 +250,9 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     },
   };
 
-  // Solid coastline (offset 0). Slightly thicker than the dashed
-  // pre-z6 baseline so its rounded joins read as humanistic curves at
-  // sharp polygon corners. This is a stroke-level approximation of
-  // corner-rounding — true constant-pixel rounding (e.g. ~24px radius
-  // independent of stroke width) would require geometry-level fillet
-  // smoothing, which is a separate effort.
-  const coastlineSolid: LayerSpecification = {
-    id: 'coastline_solid',
-    type: 'line',
-    source: SOURCE_NAME,
-    'source-layer': 'water',
-    minzoom: 6,
-    filter: ['all',
-      ['!=', ['get', 'kind'], 'river'],
-      ['!=', ['get', 'kind'], 'stream'],
-    ],
-    paint: {
-      'line-color': ink,
-      'line-width': 1.6,
-    },
-    layout: {
-      'line-cap': 'round',
-      'line-join': 'round',
-    },
-  };
-
-  // Major roads only — motorway-class (kind=highway) and trunk/primary
-  // (kind=major_road). Skipped tunnels and bridges/links to keep the line
-  // density honest. Visible only at z9+ (~50 km altitude and below) so
-  // higher-altitude views remain road-free.
+  // Major roads — motorway-class (highway) and trunk/primary (major_road).
+  // Skipped tunnels and bridges. Only at z9+ so high-altitude views stay
+  // road-free.
   const roadsMajor: LayerSpecification = {
     id: 'roads_major',
     type: 'line',
@@ -457,8 +480,7 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
       ...baseLayers,
       boundariesCountry,
       rivers,
-      coastlineDashed,
-      coastlineSolid,
+      coastline,
       roadsMajor,
       placesCountry,
       placesRegion,

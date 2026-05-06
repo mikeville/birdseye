@@ -17,7 +17,13 @@ import {
   getStartLocation,
   type StartLocation,
 } from './geolocation';
-import { buildStyle, DEFAULT_COLORS, WATER_PATTERN_ID, type Colors } from './style';
+import {
+  buildStyle,
+  DEFAULT_COLORS,
+  WATER_PATTERN_ID,
+  WATER_PATTERN_FINE_ID,
+  type Colors,
+} from './style';
 import { makeStipplePattern } from './waterPattern';
 import { HUD } from './HUD';
 import { Slider } from './Slider';
@@ -180,7 +186,18 @@ export default function Birdseye() {
     const onStyleLoad = () => {
       const c = colorsRef.current;
       try {
+        if (map.hasImage(WATER_PATTERN_FINE_ID)) map.removeImage(WATER_PATTERN_FINE_ID);
         if (map.hasImage(WATER_PATTERN_ID)) map.removeImage(WATER_PATTERN_ID);
+        // Fine tier — denser, smaller dots. Used at low zoom where the
+        // regular pattern would read as discrete features rather than
+        // texture. Tile size deliberately differs so the seam phase
+        // doesn't align across tiers if a region of the map is split
+        // across the threshold.
+        map.addImage(
+          WATER_PATTERN_FINE_ID,
+          makeStipplePattern(c.ink, c.paper, { size: 48, count: 38, radius: 0.5 }),
+          { pixelRatio: 2 },
+        );
         map.addImage(
           WATER_PATTERN_ID,
           makeStipplePattern(c.ink, c.paper),
