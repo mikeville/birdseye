@@ -8,11 +8,16 @@ import { formatTick, type Units } from './units';
 // Vertical slider on the right edge. Bottom = low altitude (1 km), top = high.
 // Range 0–100 maps log-scale to 1 → 10,000 km via altitudeFromSlider.
 //
-// Tick anchors stay in km — they represent physical altitude. The active
-// units toggle only changes how those anchors are *labeled*; the thumb's
-// physical position is unaffected.
+// Tick anchors are physical altitudes in km. We keep two sets so the labels
+// are always round numbers in the active unit — converting metric anchors
+// directly to imperial gives 0.6, 6, 62, 621, 6.2k mi which reads as noise.
+// The thumb's physical position depends only on the altitude value, so the
+// thumb stays put when the user toggles units; only the tick anchors and
+// labels change.
 
-const TICK_KM = [1, 10, 100, 1000, 10000];
+const KM_PER_MI = 1 / 0.621371;
+const TICK_KM_METRIC = [1, 10, 100, 1000, 10000];
+const TICK_KM_IMPERIAL = [1, 10, 100, 1000, 6000].map((mi) => mi * KM_PER_MI);
 
 export function Slider({
   value,
@@ -63,14 +68,19 @@ export function Slider({
 
   const thumbBottomPct = sliderValue; // 0..100
 
+  const tickKm = units === 'imperial' ? TICK_KM_IMPERIAL : TICK_KM_METRIC;
+
   return (
     <div
       style={{
         position: 'absolute',
         right: 0,
-        top: '50%',
-        transform: 'translateY(-50%)',
-        height: '78%',
+        // Clear the TopBar at the top; rest above the bottom edge. Using
+        // top/bottom instead of centering keeps the slider out from under
+        // the header regardless of header height (it wraps on narrow
+        // screens).
+        top: 120,
+        bottom: 24,
         width: 56,
         display: 'flex',
         flexDirection: 'column',
@@ -113,7 +123,7 @@ export function Slider({
           }}
         />
         {/* tick marks */}
-        {TICK_KM.map((km) => {
+        {tickKm.map((km) => {
           const pct = sliderFromAltitude(km); // 0..100
           return (
             <div

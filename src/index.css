@@ -1,7 +1,7 @@
 :root {
-  color-scheme: light;
-  --paper: #f4eee0;
-  --ink: #2a2520;
+  color-scheme: dark;
+  --paper: #244d5b;
+  --ink: #ccffe2;
 }
 
 * {
@@ -40,4 +40,50 @@ body {
 html,
 body {
   touch-action: manipulation;
+}
+
+/* TopBar layout. Mobile: column with the headline alone on top and a stats /
+   actions row below. Desktop: three columns (headline, stats, actions) in a
+   single row, achieved by dissolving the .topbar-row wrapper with
+   `display: contents` so the inner stats + actions become direct children of
+   the flex header. */
+.topbar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbar-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+@media (min-width: 720px) {
+  .topbar {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 24px !important;
+  }
+  .topbar-headline {
+    flex: 0 1 auto;
+  }
+  .topbar-row {
+    display: contents;
+  }
+  .topbar-stats {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
 }

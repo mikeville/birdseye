@@ -1,8 +1,7 @@
 import type { Units } from './units';
 
-// Two-segment km / mi pill. Sits below the LocateButton in the top-left
-// stack and mirrors its paper/italic-serif aesthetic. Each segment is its
-// own button with aria-pressed so screen readers see a proper toggle pair.
+// Two-segment km / mi pill. Composed inline by TopBar — positioning is
+// the parent's concern.
 export function UnitsToggle({
   units,
   onChange,
@@ -15,12 +14,7 @@ export function UnitsToggle({
       role="group"
       aria-label="Units"
       style={{
-        position: 'absolute',
-        top: 186,
-        left: 14,
         display: 'flex',
-        background: 'color-mix(in srgb, var(--paper) 80%, transparent)',
-        backdropFilter: 'blur(4px)',
         border: '1px solid color-mix(in srgb, var(--ink) 33%, transparent)',
         userSelect: 'none',
       }}
@@ -55,9 +49,9 @@ function Segment({
       onClick={onClick}
       aria-pressed={active}
       style={{
-        minHeight: 36,
-        minWidth: 44,
-        padding: '8px 14px',
+        minHeight: 28,
+        minWidth: 32,
+        padding: '3px 8px',
         background: 'transparent',
         border: 'none',
         color: 'var(--ink)',

@@ -25,12 +25,10 @@ import {
   type Colors,
 } from './style';
 import { makeStipplePattern } from './waterPattern';
-import { HUD } from './HUD';
+import { TopBar } from './TopBar';
 import { Slider } from './Slider';
 import { Crosshair } from './Crosshair';
-import { Caption } from './Caption';
-import { LocateButton, type GeoStatus } from './LocateButton';
-import { UnitsToggle } from './UnitsToggle';
+import type { GeoStatus } from './LocateButton';
 import { DevPanel } from './DevPanel';
 import type { Units } from './units';
 
@@ -274,8 +272,6 @@ export default function Birdseye() {
     return () => cancelAnimationFrame(raf);
   }, [start]);
 
-  const fov = fovKm(altitudeKm);
-
   return (
     <div
       ref={rootRef}
@@ -291,22 +287,18 @@ export default function Birdseye() {
         style={{ position: 'absolute', inset: 0 }}
       />
       <Crosshair />
-      <HUD
+      <TopBar
         altitudeKm={altitudeKm}
-        fovKm={fov}
         speedKmh={speedKmh}
         latDeg={start.lat}
         lonDeg={liveLon ?? start.lon}
         units={units}
-      />
-      <LocateButton
-        status={geoStatus}
+        geoStatus={geoStatus}
         hasGeo={start.source === 'geo'}
-        onClick={onLocate}
+        onLocate={onLocate}
+        onUnitsChange={setUnits}
       />
-      <UnitsToggle units={units} onChange={setUnits} />
       <Slider value={altitudeKm} onChange={setAltitudeKm} units={units} />
-      <Caption speedKmh={speedKmh} units={units} />
       <DevPanel colors={colors} onChange={setColors} />
     </div>
   );

@@ -34,8 +34,8 @@ import type { StyleSpecification, LayerSpecification } from 'maplibre-gl';
 // Used as defaults — runtime overrides flow through StyleOptions.colors so
 // the dev color panel can rebuild the style with different values without
 // touching source.
-export const PAPER = '#f4eee0';
-export const INK = '#2a2520';
+export const PAPER = '#244d5b';
+export const INK = '#ccffe2';
 
 export type Colors = { paper: string; ink: string };
 export const DEFAULT_COLORS: Colors = { paper: PAPER, ink: INK };

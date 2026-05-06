@@ -36,8 +36,8 @@ export function DevPanel({
         onClick={() => setOpen(true)}
         style={{
           position: 'absolute',
-          top: 14,
-          right: 14,
+          bottom: 14,
+          left: 14,
           width: 24,
           height: 24,
           borderRadius: 12,
@@ -60,8 +60,8 @@ export function DevPanel({
     <div
       style={{
         position: 'absolute',
-        top: 14,
-        right: 14,
+        bottom: 14,
+        left: 14,
         padding: '8px 10px 10px',
         background: 'color-mix(in srgb, var(--paper) 88%, transparent)',
         backdropFilter: 'blur(4px)',
