@@ -1,10 +1,6 @@
+// Surveyor / map-center reticle: ticks sit outside the circle with a 2 px gap.
 export function Crosshair() {
   const stroke = 'var(--ink)';
-  // viewBox 32×32, circle r=11 centered at (16,16) → circle edges at 5 and 27.
-  // Tick lines sit fully OUTSIDE the circle with a deliberate 2 px gap between
-  // each line tip and the circle edge — the conventional surveyor / map-center
-  // reticle. The previous geometry started a few pixels outside and ended a
-  // few pixels inside, which read as a misalignment.
   return (
     <svg
       viewBox="0 0 32 32"

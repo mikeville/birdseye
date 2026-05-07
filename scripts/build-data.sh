@@ -23,7 +23,7 @@ mkdir -p "$PUBLIC"
 #    app. Bump --maxzoom for crisper detail at low altitudes; expect roughly:
 #      z6 → ~30 MB     (current default; chunky at altitudes < 100 km)
 #      z7 → ~120 MB
-#      z8 → ~480 MB    (matches BUILD_SPEC.md target; serves z12+ via overzoom)
+#      z8 → ~480 MB    (serves z12+ via overzoom)
 SOURCE_URL="https://demo-bucket.protomaps.com/v4.pmtiles"
 MAXZOOM="${BIRDSEYE_BASEMAP_MAXZOOM:-7}"
 

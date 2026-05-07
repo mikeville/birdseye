@@ -1,43 +1,23 @@
-// Build the MapLibre style JSON for Birdseye.
+// Build the MapLibre style for Birdseye.
 //
-// Approach:
-//   1. Take the Protomaps "white" flavor non-label layers as a starting point.
-//   2. Drop everything but earth + water polygons (no buildings, POIs,
-//      landuse, etc.). The map should read like a blank topographic sheet
-//      at high altitudes.
-//   3. Recolor: paper-warm background everywhere; water = background (no
-//      fill contrast — coastlines do the work).
-//   4. Layer back in zoom-tiered detail so the map becomes recognizable as
-//      altitude drops below ~500 km without overwhelming high-altitude
-//      views with inherited detail. Each new layer has an explicit
-//      `minzoom` so it stays out of higher altitudes:
-//        z3+:   country admin lines (subtle dashed),
-//               landcover outlines (broad regional swaths)
-//        z3.5+: region (state/province) labels
-//        z4+:   region (state/province) admin lines (lighter dashed),
-//               named water bodies (oceans, seas, lakes, bays)
-//        z5+:   rivers (line), city/locality labels, landuse outlines
-//               (parks, forests, residential, industrial, airports)
-//        z6+:   river name labels, landmark labels
-//        z9+:   major roads (motorway/trunk only, dashed)
-//   5. Add a curated landmarks GeoJSON overlay for ~50 globally
-//      recognizable places (Stonehenge, Mt. Fuji, etc.) — Protomaps' POIs
-//      are too noisy to filter to "globally recognizable", so we ship a
-//      hand-curated source instead.
+// Start from Protomaps "white" flavor, prune to earth + water polygons, then
+// add bespoke layers back in a zoom-tiered ladder so the map stays clean at
+// altitude and gains detail as you drop in:
+//   z3+:   country admin lines, landcover outlines
+//   z3.5+: region labels
+//   z4+:   region admin lines, named water bodies
+//   z5+:   rivers, city labels, landuse outlines
+//   z6+:   river labels, landmark labels
+//   z9+:   major roads
 //
-// Schema reference (verified against @protomaps/basemaps@4.x white flavor):
-//   - boundaries.kind_detail: 1–2 country, 3–4 state/region
-//   - water.kind: river / stream (line); lake / water / ocean / sea (poly)
-//   - roads.kind: highway / major_road / minor_road / other
-//   - places.kind: country / region / locality / neighbourhood
+// Plus a hand-curated landmarks GeoJSON overlay (Protomaps POIs are too noisy
+// to filter down to globally-recognizable places).
 
 import { layers as basemapsLayers, namedFlavor } from '@protomaps/basemaps';
 import type { StyleSpecification, LayerSpecification } from 'maplibre-gl';
 
-// Paper background, soft black for marks. Slightly warm of pure black.
-// Used as defaults — runtime overrides flow through StyleOptions.colors so
-// the dev color panel can rebuild the style with different values without
-// touching source.
+// Paper background, ink for marks. Runtime overrides flow through
+// StyleOptions.colors so the style can be rebuilt with different values.
 export const PAPER = '#244d5b';
 export const INK = '#ccffe2';
 

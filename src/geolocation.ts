@@ -1,8 +1,4 @@
-// Try to get the user's real latitude/longitude. On any failure or denial,
-// fall back to Athens (~38°N, 24°E). Drifting westward from Athens sweeps
-// the camera over Italy → Iberia → Atlantic → Americas → Pacific → Asia
-// → Caucasus → back to Greece: lots of recognizable land for the visceral
-// payoff.
+// Try to get the user's real lat/lon. On failure or denial, fall back to Athens.
 
 export type StartLocation = {
   lat: number;

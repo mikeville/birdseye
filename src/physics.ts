@@ -1,5 +1,4 @@
 // Pure math for Birdseye's inertial-frame view of a rotating Earth.
-// Constants are computed, not hardcoded, per BUILD_SPEC.
 
 export const EARTH_CIRCUMFERENCE_KM = 40075;
 export const SIDEREAL_DAY_SEC = 86164;

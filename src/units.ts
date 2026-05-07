@@ -21,13 +21,6 @@ export const formatAltitude = (km: number, u: Units) => {
   return `${fmt(v, dp)} ${label}`;
 };
 
-// Field-of-view diameter: always 1 dp.
-export const formatDistance = (km: number, u: Units) => {
-  const v = u === 'imperial' ? km * KM_TO_MI : km;
-  const label = u === 'imperial' ? 'mi' : 'km';
-  return `${fmt(v, 1)} ${label}`;
-};
-
 // Speed: integer rounded.
 export const formatSpeed = (kmh: number, u: Units) => {
   const v = u === 'imperial' ? kmh * KM_TO_MI : kmh;
