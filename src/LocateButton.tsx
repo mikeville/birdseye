@@ -26,22 +26,12 @@ export function LocateButton({
   return (
     <button
       type="button"
+      className="locate-button"
       onClick={onClick}
       disabled={disabled}
       style={{
-        minHeight: 30,
-        padding: '3px 8px',
-        background: 'transparent',
-        border: '1px solid color-mix(in srgb, var(--ink) 75%, transparent)',
-        color: 'var(--ink)',
-        cursor: disabled ? 'default' : 'pointer',
         opacity: status === 'denied' ? 0.6 : 1,
-        fontFamily:
-          '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif',
-        fontSize: 12,
-        letterSpacing: 0.2,
-        userSelect: 'none',
-        transition: 'opacity 200ms ease, border-color 200ms ease',
+        cursor: disabled ? 'default' : 'pointer',
       }}
     >
       {label}

@@ -81,7 +81,7 @@ export function Slider({
         // screens).
         top: 150,
         bottom: 36,
-        width: 72,
+        width: 80,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -140,7 +140,7 @@ export function Slider({
             >
               <div
                 style={{
-                  width: 8,
+                  width: 16,
                   height: 1,
                   background: 'var(--ink)',
                 }}
@@ -148,7 +148,7 @@ export function Slider({
               <span
                 style={{
                   position: 'absolute',
-                  right: 14,
+                  right: 24,
                   fontFamily:
                     '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif',
                   fontSize: 12,

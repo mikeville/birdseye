@@ -45,7 +45,6 @@ export function TopBar({
         top: 0,
         left: 0,
         right: 0,
-        padding: '12px 12px 12px 16px',
         background: 'var(--paper)',
         borderBottom:
           '1px solid color-mix(in srgb, var(--ink) 75%, transparent)',
@@ -86,9 +85,14 @@ export function TopBar({
             label={compact ? 'pos.' : 'position'}
             value={`${formatLat(latDeg)} ${formatLon(lonDeg)}`}
           />
-          <UnitsToggle units={units} onChange={onUnitsChange} />
+          {compact && (
+            <UnitsToggle units={units} onChange={onUnitsChange} />
+          )}
         </div>
         <div className="topbar-actions">
+          {!compact && (
+            <UnitsToggle units={units} onChange={onUnitsChange} />
+          )}
           <LocateButton
             status={geoStatus}
             hasGeo={hasGeo}
