@@ -247,9 +247,9 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     [
       'match',
       ['get', 'kind'],
-      'ocean', 1.0,
-      'sea', 1.0,
-      'lake', 0.7,
+      'ocean', 0.8,
+      'sea', 0.7,
+      'lake', 0.6,
       'water', 0.45,
       'swimming_pool', 0.3,
       0.6,

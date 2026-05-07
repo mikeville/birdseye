@@ -45,17 +45,17 @@ export function TopBar({
         top: 0,
         left: 0,
         right: 0,
-        padding: '12px 14px 10px',
+        padding: '12px 12px 12px 16px',
         background: 'var(--paper)',
         borderBottom:
-          '1px solid color-mix(in srgb, var(--ink) 18%, transparent)',
+          '1px solid color-mix(in srgb, var(--ink) 75%, transparent)',
         color: 'var(--ink)',
         fontFamily:
           '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif',
         userSelect: 'none',
         display: 'flex',
         flexDirection: 'column',
-        gap: 8,
+        gap: 10,
         zIndex: 2,
       }}
     >
@@ -64,7 +64,7 @@ export function TopBar({
         style={{
           margin: 0,
           fontStyle: 'italic',
-          fontWeight: 400,
+          fontWeight: 600,
           fontSize: 14,
           lineHeight: 1.35,
           letterSpacing: 0.1,
@@ -77,6 +77,7 @@ export function TopBar({
           className="topbar-stats"
           style={{ fontSize: 12, letterSpacing: 0.2 }}
         >
+          <Stat label="speed" value={formatSpeed(speedKmh, units)} />
           <Stat
             label={compact ? 'alt.' : 'altitude'}
             value={formatAltitude(altitudeKm, units)}
@@ -85,7 +86,7 @@ export function TopBar({
             label={compact ? 'pos.' : 'position'}
             value={`${formatLat(latDeg)} ${formatLon(lonDeg)}`}
           />
-          <Stat label="speed" value={formatSpeed(speedKmh, units)} />
+          <UnitsToggle units={units} onChange={onUnitsChange} />
         </div>
         <div className="topbar-actions">
           <LocateButton
@@ -94,7 +95,6 @@ export function TopBar({
             onClick={onLocate}
             compact={compact}
           />
-          <UnitsToggle units={units} onChange={onUnitsChange} />
         </div>
       </div>
     </header>

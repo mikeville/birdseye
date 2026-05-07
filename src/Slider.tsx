@@ -79,9 +79,9 @@ export function Slider({
         // top/bottom instead of centering keeps the slider out from under
         // the header regardless of header height (it wraps on narrow
         // screens).
-        top: 120,
-        bottom: 24,
-        width: 56,
+        top: 150,
+        bottom: 36,
+        width: 72,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -119,7 +119,6 @@ export function Slider({
             width: 1,
             transform: 'translateX(-50%)',
             background: 'var(--ink)',
-            opacity: 0.35,
           }}
         />
         {/* tick marks */}
@@ -144,7 +143,6 @@ export function Slider({
                   width: 8,
                   height: 1,
                   background: 'var(--ink)',
-                  opacity: 0.45,
                 }}
               />
               <span
@@ -153,10 +151,9 @@ export function Slider({
                   right: 14,
                   fontFamily:
                     '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif',
-                  fontStyle: 'italic',
-                  fontSize: 10,
+                  fontSize: 12,
+                  letterSpacing: 0.2,
                   color: 'var(--ink)',
-                  opacity: 0.5,
                   fontVariantNumeric: 'tabular-nums',
                 }}
               >
@@ -176,7 +173,7 @@ export function Slider({
             height: active ? 22 : 18,
             borderRadius: '50%',
             background: 'var(--paper)',
-            border: '1.5px solid var(--ink)',
+            border: '1px solid var(--ink)',
             boxShadow: active ? '0 0 0 4px color-mix(in srgb, var(--ink) 10%, transparent)' : 'none',
             transition:
               'width 120ms ease, height 120ms ease, box-shadow 120ms ease',

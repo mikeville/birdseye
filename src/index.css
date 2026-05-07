@@ -47,12 +47,6 @@ body {
    single row, achieved by dissolving the .topbar-row wrapper with
    `display: contents` so the inner stats + actions become direct children of
    the flex header. */
-/* Centered on mobile so the headline reads as a balanced display line above
-   the stats / actions row. Desktop overrides this back to default flow below
-   because the headline sits inline with the stats column. */
-.topbar-headline {
-  text-align: center;
-}
 
 .topbar-row {
   display: flex;
@@ -93,5 +87,9 @@ body {
   .topbar-stats {
     flex: 1 1 auto;
     justify-content: center;
+    /* Roomier on desktop. Mobile stays at the tighter gap defined on the
+       base .topbar-stats rule so the stats row doesn't wrap awkwardly on
+       narrow viewports. */
+    gap: 4px 32px;
   }
 }

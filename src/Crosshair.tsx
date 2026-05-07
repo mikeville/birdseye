@@ -16,7 +16,6 @@ export function Crosshair() {
         left: '50%',
         transform: 'translate(-50%, -50%)',
         pointerEvents: 'none',
-        opacity: 0.6,
       }}
       aria-hidden
     >
@@ -26,12 +25,12 @@ export function Crosshair() {
         r={11}
         fill="none"
         stroke={stroke}
-        strokeWidth={0.9}
+        strokeWidth={1}
       />
-      <line x1={16} y1={0} x2={16} y2={3} stroke={stroke} strokeWidth={0.9} />
-      <line x1={16} y1={29} x2={16} y2={32} stroke={stroke} strokeWidth={0.9} />
-      <line x1={0} y1={16} x2={3} y2={16} stroke={stroke} strokeWidth={0.9} />
-      <line x1={29} y1={16} x2={32} y2={16} stroke={stroke} strokeWidth={0.9} />
+      <line x1={16} y1={0} x2={16} y2={10} stroke={stroke} strokeWidth={1} />
+      <line x1={16} y1={22} x2={16} y2={32} stroke={stroke} strokeWidth={1} />
+      <line x1={0} y1={16} x2={10} y2={16} stroke={stroke} strokeWidth={1} />
+      <line x1={22} y1={16} x2={32} y2={16} stroke={stroke} strokeWidth={1} />
     </svg>
   );
 }

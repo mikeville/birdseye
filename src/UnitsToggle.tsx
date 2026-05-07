@@ -1,7 +1,10 @@
 import type { Units } from './units';
 
-// Two-segment km / mi pill. Composed inline by TopBar — positioning is
-// the parent's concern.
+// Inline text-only toggle. Lives among the HUD stats, styled like the
+// stat values (serif, tabular-nums, small letter-spacing) with a dashed
+// underline as the only "this is clickable" cue. The arrow shows what
+// will happen: clicking "km → mi" switches to imperial, "mi → km"
+// switches to metric.
 export function UnitsToggle({
   units,
   onChange,
@@ -9,60 +12,40 @@ export function UnitsToggle({
   units: Units;
   onChange: (next: Units) => void;
 }) {
-  return (
-    <div
-      role="group"
-      aria-label="Units"
-      style={{
-        display: 'flex',
-        border: '1px solid color-mix(in srgb, var(--ink) 33%, transparent)',
-        userSelect: 'none',
-      }}
-    >
-      <Segment
-        label="km"
-        active={units === 'metric'}
-        onClick={() => onChange('metric')}
-      />
-      <div style={{ width: 1, background: 'color-mix(in srgb, var(--ink) 33%, transparent)' }} />
-      <Segment
-        label="mi"
-        active={units === 'imperial'}
-        onClick={() => onChange('imperial')}
-      />
-    </div>
-  );
-}
-
-function Segment({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
+  const next = units === 'metric' ? 'imperial' : 'metric';
+  const label =
+    units === 'metric' ? (
+      <>
+        km <span style={{ opacity: 0.55 }}>→ mi</span>
+      </>
+    ) : (
+      <>
+        mi <span style={{ opacity: 0.55 }}>→ km</span>
+      </>
+    );
   return (
     <button
       type="button"
-      onClick={onClick}
-      aria-pressed={active}
+      onClick={() => onChange(next)}
+      aria-label={`Switch to ${next === 'metric' ? 'kilometers' : 'miles'}`}
       style={{
-        minHeight: 28,
-        minWidth: 32,
-        padding: '3px 8px',
+        // Sit visually on the same baseline as the stat values rather than
+        // looking like a chip — no background, no box, just text plus a
+        // dashed underline as the affordance.
         background: 'transparent',
         border: 'none',
+        padding: 0,
+        margin: 0,
         color: 'var(--ink)',
-        opacity: active ? 1 : 0.4,
-        cursor: 'pointer',
-        fontFamily:
-          '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif',
-        fontStyle: 'italic',
+        fontFamily: 'inherit',
         fontSize: 12,
         letterSpacing: 0.2,
-        transition: 'opacity 200ms ease',
+        fontVariantNumeric: 'tabular-nums',
+        cursor: 'pointer',
+        borderBottom:
+          '0',
+        lineHeight: 1.2,
+        userSelect: 'none',
       }}
     >
       {label}
