@@ -85,7 +85,7 @@ export default function Birdseye() {
       : null;
     return isUnits(stored) ? stored : 'metric';
   });
-  const [colors, setColors] = useState<Colors>(loadStoredColors);
+  const [colors] = useState<Colors>(loadStoredColors);
 
   // Persist the units preference across reloads.
   useEffect(() => {

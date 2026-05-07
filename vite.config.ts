@@ -9,6 +9,9 @@ const explicitPort = env.PORT ? Number(env.PORT) : undefined;
 // birdseye doesn't fight other prototypes already on 5173. With strictPort
 // off, Vite still auto-increments if 5180 is taken. PORT env var pins.
 export default defineConfig({
+  // Relative asset paths so the same build works whether served from the site
+  // root (despin.netlify.app/) or behind a subpath proxy (mikemake.com/despin/).
+  base: './',
   plugins: [react()],
   server: {
     host: true,

@@ -52,18 +52,20 @@ const GLYPHS_URL =
   'https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf';
 const LABEL_FONT = ['Noto Sans Regular'];
 
-// PMTiles archive bundled at public/basemap.pmtiles. Same-origin → no CORS
-// concerns, no proxy. Currently extracted at lat ±60°, z0–7 from the
-// Protomaps daily build (run scripts/build-data.sh to regenerate / bump
-// zoom). Override at build time via VITE_PMTILES_URL if you swap sources.
+// PMTiles archive. In dev and standalone deploys it's bundled at
+// public/basemap.pmtiles; in production we typically host it externally
+// (e.g. GitHub Releases) and inject the URL via VITE_PMTILES_URL — the
+// 142 MB file is gitignored, so it isn't in the deploy bundle by default.
+// The fallback uses BASE_URL so a relative path also works when the app
+// is served behind a subpath proxy (e.g. mikemake.com/despin/).
 const DEFAULT_PMTILES_URL =
-  import.meta.env.VITE_PMTILES_URL ?? '/basemap.pmtiles';
+  import.meta.env.VITE_PMTILES_URL ?? `${import.meta.env.BASE_URL}basemap.pmtiles`;
 
 // MapLibre's pmtiles:// protocol expects an absolute URL. Resolve relatives
-// against the page origin at runtime so the dev proxy and production-bundled
-// asset both work without a config change.
+// against the current page (not just the origin) so the same code works at
+// the dev server, at the site root, and behind a subpath proxy.
 const resolveUrl = (u: string): string =>
-  /^[a-z]+:\/\//i.test(u) ? u : new URL(u, window.location.origin).toString();
+  /^[a-z]+:\/\//i.test(u) ? u : new URL(u, window.location.href).toString();
 
 const SOURCE_NAME = 'protomaps';
 const LANDMARKS_SOURCE = 'landmarks';
@@ -602,7 +604,7 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
       },
       [LANDMARKS_SOURCE]: {
         type: 'geojson',
-        data: '/landmarks.geojson',
+        data: `${import.meta.env.BASE_URL}landmarks.geojson`,
       },
     },
     layers: [
