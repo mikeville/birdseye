@@ -1,4 +1,4 @@
-// Tileable stipple pattern generator for the water fill.
+// Tileable stipple pattern generator for the water fill. 
 //
 // Uses Mitchell's best-candidate algorithm — a cheap Poisson-disk
 // approximation. For each new dot, sample N random candidates and pick
@@ -25,8 +25,8 @@ export type StippleOptions = {
 
 const DEFAULTS: Required<StippleOptions> = {
   size: 64,
-  count: 22,
-  radius: 0.7,
+  count: 48,
+  radius: 0.5,
   pixelRatio: 2,
   candidates: 24,
 };

@@ -44,12 +44,13 @@ export const INK = '#ccffe2';
 export type Colors = { paper: string; ink: string };
 export const DEFAULT_COLORS: Colors = { paper: PAPER, ink: INK };
 
-// Default fontstack — Protomaps' free-tier glyphs CDN. The italic-serif
-// substitution is deferred to the polish pass (BUILD_SPEC open question #2),
-// so for now we use Noto Sans Italic available in Protomaps' fontstack.
+// Default fontstack — Protomaps' free-tier glyphs CDN. Map labels are
+// non-italic; the only italic type in the app is the headline copy in the
+// HUD. Keeping the on-map type upright reduces visual noise and matches a
+// quiet topographic / blueprint aesthetic.
 const GLYPHS_URL =
   'https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf';
-const ITALIC_FONT = ['Noto Sans Italic'];
+const LABEL_FONT = ['Noto Sans Regular'];
 
 // PMTiles archive bundled at public/basemap.pmtiles. Same-origin → no CORS
 // concerns, no proxy. Currently extracted at lat ±60°, z0–7 from the
@@ -380,7 +381,7 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     filter: ['==', ['get', 'kind'], 'country'],
     layout: {
       'text-field': NAME_FIELD,
-      'text-font': ITALIC_FONT,
+      'text-font': LABEL_FONT,
       'text-size': 11,
       'text-letter-spacing': 0.06,
       'text-transform': 'uppercase',
@@ -407,7 +408,7 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     filter: ['==', ['get', 'kind'], 'region'],
     layout: {
       'text-field': NAME_FIELD,
-      'text-font': ITALIC_FONT,
+      'text-font': LABEL_FONT,
       'text-size': 9,
       'text-letter-spacing': 0.04,
       'text-transform': 'uppercase',
@@ -447,7 +448,7 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     ] as unknown as maplibregl.FilterSpecification,
     layout: {
       'text-field': NAME_FIELD,
-      'text-font': ITALIC_FONT,
+      'text-font': LABEL_FONT,
       'symbol-sort-key': ['get', 'min_zoom'],
       'text-size': [
         'interpolate',
@@ -487,7 +488,7 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     ],
     layout: {
       'text-field': NAME_FIELD,
-      'text-font': ITALIC_FONT,
+      'text-font': LABEL_FONT,
       'symbol-sort-key': ['coalesce', ['get', 'pmap:min_zoom'], ['get', 'min_zoom'], 10],
       'text-size': [
         'interpolate', ['linear'], ['zoom'],
@@ -519,7 +520,7 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     filter: ['==', ['get', 'kind'], 'river'],
     layout: {
       'text-field': NAME_FIELD,
-      'text-font': ITALIC_FONT,
+      'text-font': LABEL_FONT,
       'text-size': 9,
       'text-letter-spacing': 0.04,
       'text-padding': 4,
@@ -562,7 +563,7 @@ export const buildStyle = (options: StyleOptions = {}): StyleSpecification => {
     minzoom: 6,
     layout: {
       'text-field': ['get', 'name'],
-      'text-font': ITALIC_FONT,
+      'text-font': LABEL_FONT,
       'text-size': [
         'interpolate',
         ['linear'],

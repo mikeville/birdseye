@@ -29,7 +29,6 @@ import { TopBar } from './TopBar';
 import { Slider } from './Slider';
 import { Crosshair } from './Crosshair';
 import type { GeoStatus } from './LocateButton';
-import { DevPanel } from './DevPanel';
 import type { Units } from './units';
 
 const UNITS_STORAGE_KEY = 'birdseye:units';
@@ -193,7 +192,7 @@ export default function Birdseye() {
         // across the threshold.
         map.addImage(
           WATER_PATTERN_FINE_ID,
-          makeStipplePattern(c.ink, c.paper, { size: 48, count: 38, radius: 0.5 }),
+          makeStipplePattern(c.ink, c.paper, { size: 48, count: 48, radius: 0.33 }),
           { pixelRatio: 2 },
         );
         map.addImage(
@@ -299,7 +298,6 @@ export default function Birdseye() {
         onUnitsChange={setUnits}
       />
       <Slider value={altitudeKm} onChange={setAltitudeKm} units={units} />
-      <DevPanel colors={colors} onChange={setColors} />
     </div>
   );
 }

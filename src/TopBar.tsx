@@ -105,21 +105,24 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'baseline', gap: 6 }}>
       <span style={{ opacity: 0.55, fontVariant: 'small-caps' }}>{label}</span>
-      <span style={{ fontStyle: 'italic', fontVariantNumeric: 'tabular-nums' }}>
+      <span style={{ fontVariantNumeric: 'tabular-nums' }}>
         {value}
       </span>
     </span>
   );
 }
 
+// Two decimals so the longitude ticks visibly as the camera drifts: at typical
+// mid-latitude rotation speeds (~1300 km/h) the displayed value changes every
+// few seconds, giving the HUD a sense of motion without becoming a blur.
 const formatLat = (d: number) => {
   const hemi = d >= 0 ? 'N' : 'S';
-  return `${Math.abs(d).toFixed(0)}°${hemi}`;
+  return `${Math.abs(d).toFixed(2)}°${hemi}`;
 };
 
 const formatLon = (d: number) => {
   const hemi = d >= 0 ? 'E' : 'W';
-  return `${Math.abs(d).toFixed(0)}°${hemi}`;
+  return `${Math.abs(d).toFixed(2)}°${hemi}`;
 };
 
 // Reactive matchMedia hook. The (max-width: 719px) breakpoint matches

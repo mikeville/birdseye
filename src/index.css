@@ -47,6 +47,13 @@ body {
    single row, achieved by dissolving the .topbar-row wrapper with
    `display: contents` so the inner stats + actions become direct children of
    the flex header. */
+/* Centered on mobile so the headline reads as a balanced display line above
+   the stats / actions row. Desktop overrides this back to default flow below
+   because the headline sits inline with the stats column. */
+.topbar-headline {
+  text-align: center;
+}
+
 .topbar-row {
   display: flex;
   align-items: center;
@@ -78,6 +85,7 @@ body {
   }
   .topbar-headline {
     flex: 0 1 auto;
+    text-align: left;
   }
   .topbar-row {
     display: contents;
