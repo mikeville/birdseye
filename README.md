@@ -1,6 +1,11 @@
 # Despin
 
-A mobile-first prototype that lets you viscerally feel Earth's rotation. You look straight down from a viewpoint **fixed in inertial space**; the ground rotates past beneath at your actual latitude. One control: a vertical altitude slider that widens or narrows the field of view. Low altitude = ground whips by. High altitude = planet turns gently. Same physics; altitude is the perceptual knob.
+*"If you stopped spinning with the earth, how fast would the ground move beneath you?"*
+
+This app answers that question visually, with a tiny taste of the [overview effect](https://en.wikipedia.org/wiki/Overview_effect).
+
+
+Look straight down from a viewpoint **fixed in inertial space**; the ground rotates past beneath at your actual location. One control: a vertical altitude slider that widens or narrows the field of view. Low altitude = ground whips by. High altitude = planet turns gently.
 
 ## Stack
 
