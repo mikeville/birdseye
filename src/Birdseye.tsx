@@ -17,6 +17,7 @@ import {
   getStartLocation,
   type StartLocation,
 } from './geolocation';
+import { formatLocationHash, parseLocationHash } from './locationHash';
 import {
   buildStyle,
   DEFAULT_COLORS,
@@ -46,9 +47,17 @@ export default function Birdseye() {
   const mapRef = useRef<maplibregl.Map | null>(null);
 
   // Default to the fallback synchronously so the experience is interactive
-  // on first paint with no permission prompt.
-  const [start, setStart] = useState<StartLocation>(FALLBACK_LOCATION);
-  const [altitudeKm, setAltitudeKm] = useState(DEFAULT_ALTITUDE_KM);
+  // on first paint with no permission prompt. A `#lat,lon[,altKm]` hash
+  // overrides the fallback so demo URLs jump straight to a chosen view.
+  const [start, setStart] = useState<StartLocation>(() => {
+    const parsed = parseLocationHash(window.location.hash);
+    if (parsed) return { lat: parsed.lat, lon: parsed.lon, source: 'fallback' };
+    return FALLBACK_LOCATION;
+  });
+  const [altitudeKm, setAltitudeKm] = useState(() => {
+    const parsed = parseLocationHash(window.location.hash);
+    return parsed?.altKm ?? DEFAULT_ALTITUDE_KM;
+  });
   const [liveLon, setLiveLon] = useState<number | null>(null);
   const [speedKmh, setSpeedKmh] = useState(0);
   const [geoStatus, setGeoStatus] = useState<GeoStatus>('idle');
@@ -69,6 +78,15 @@ export default function Birdseye() {
 
   const altitudeRef = useRef(altitudeKm);
   altitudeRef.current = altitudeKm;
+
+  // After a successful re-center, mirror the new view into the URL hash so
+  // it's shareable. Guarded on `source === 'geo'` so the fallback (or a
+  // user-typed hash) doesn't get overwritten on mount.
+  useEffect(() => {
+    if (start.source !== 'geo') return;
+    const hash = formatLocationHash(start.lat, start.lon, altitudeRef.current);
+    history.replaceState(null, '', `#${hash}`);
+  }, [start]);
 
   // Vertical scroll / trackpad pinch → altitude. Multiplicative because the
   // slider is log-scale: a constant `k` keeps each wheel notch a fixed
