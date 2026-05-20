@@ -1,9 +1,15 @@
 // Try to get the user's real lat/lon. On failure or denial, fall back to Athens.
 
+// `source` distinguishes how the location was set:
+//   'fallback' — initial default (Athens) or a malformed URL hash
+//   'geo'      — browser geolocation API
+//   'search'   — typed place name resolved through geocoding
+// Anything other than 'fallback' is treated as user-chosen (URL writeback
+// fires, LocateButton flips to "Re-center on me").
 export type StartLocation = {
   lat: number;
   lon: number;
-  source: 'geo' | 'fallback';
+  source: 'geo' | 'fallback' | 'search';
 };
 
 export const FALLBACK_LOCATION: StartLocation = {

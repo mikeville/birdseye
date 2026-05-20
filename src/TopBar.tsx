@@ -5,6 +5,7 @@ import {
   type Units,
 } from './units';
 import { LocateButton, type GeoStatus } from './LocateButton';
+import { LocationSearch } from './LocationSearch';
 import { UnitsToggle } from './UnitsToggle';
 
 // Single full-width container at the top of the window. Mobile: the
@@ -25,6 +26,7 @@ export function TopBar({
   hasGeo,
   onLocate,
   onUnitsChange,
+  onSearchResolved,
 }: {
   altitudeKm: number;
   speedKmh: number;
@@ -35,6 +37,7 @@ export function TopBar({
   hasGeo: boolean;
   onLocate: () => void;
   onUnitsChange: (next: Units) => void;
+  onSearchResolved: (loc: { lat: number; lon: number }) => void;
 }) {
   const compact = useCompact();
   return (
@@ -85,20 +88,17 @@ export function TopBar({
             label={compact ? 'pos.' : 'position'}
             value={`${formatLat(latDeg)} ${formatLon(lonDeg)}`}
           />
-          {compact && (
-            <UnitsToggle units={units} onChange={onUnitsChange} />
-          )}
+          <UnitsToggle units={units} onChange={onUnitsChange} />
         </div>
         <div className="topbar-actions">
-          {!compact && (
-            <UnitsToggle units={units} onChange={onUnitsChange} />
-          )}
-          <LocateButton
-            status={geoStatus}
-            hasGeo={hasGeo}
-            onClick={onLocate}
-            compact={compact}
-          />
+          <div className="topbar-search-group">
+            <LocationSearch onResolved={onSearchResolved} />
+            <LocateButton
+              status={geoStatus}
+              hasGeo={hasGeo}
+              onClick={onLocate}
+            />
+          </div>
         </div>
       </div>
     </header>

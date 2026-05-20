@@ -79,11 +79,11 @@ export default function Birdseye() {
   const altitudeRef = useRef(altitudeKm);
   altitudeRef.current = altitudeKm;
 
-  // After a successful re-center, mirror the new view into the URL hash so
-  // it's shareable. Guarded on `source === 'geo'` so the fallback (or a
-  // user-typed hash) doesn't get overwritten on mount.
+  // After a user-chosen location (geolocation or place search), mirror the
+  // new view into the URL hash so it's shareable. Guarded on non-fallback
+  // so the initial Athens default (or a user-typed hash) isn't overwritten.
   useEffect(() => {
-    if (start.source !== 'geo') return;
+    if (start.source === 'fallback') return;
     const hash = formatLocationHash(start.lat, start.lon, altitudeRef.current);
     history.replaceState(null, '', `#${hash}`);
   }, [start]);
@@ -106,6 +106,55 @@ export default function Birdseye() {
     return () => el.removeEventListener('wheel', onWheel);
   }, []);
 
+  // Touch drag anywhere on the map → altitude. Many users (observed in
+  // person) instinctively try to push the map up/down with a finger; this
+  // routes that gesture into the slider's logic so they don't have to
+  // discover the side rail. Attached to the map container, not the root,
+  // so touches on the topbar controls and the slider still hit those
+  // components without the altitude side-effect.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    let lastY: number | null = null;
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) {
+        lastY = null;
+        return;
+      }
+      lastY = e.touches[0].clientY;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 1 || lastY == null) return;
+      const y = e.touches[0].clientY;
+      // Finger moving up the screen = positive delta = altitude up
+      // (matches the wheel's "scroll down to zoom out" direction).
+      const deltaY = lastY - y;
+      lastY = y;
+      e.preventDefault();
+      // Touch deltas are larger per-event than wheel ticks, so use the
+      // ctrl-wheel coefficient — a half-screen swipe ≈ ~3× altitude
+      // change, which matches the slider's perceived sensitivity.
+      const k = 0.005;
+      setAltitudeKm((prev) => {
+        const next = prev * Math.exp(deltaY * k);
+        return Math.min(10000, Math.max(1, next));
+      });
+    };
+    const onTouchEnd = () => {
+      lastY = null;
+    };
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd);
+    el.addEventListener('touchcancel', onTouchEnd);
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }, []);
+
   // Geolocation is opt-in: triggered only when the user taps the button.
   const onLocate = async () => {
     setGeoStatus('locating');
@@ -117,6 +166,11 @@ export default function Birdseye() {
       setGeoStatus('denied');
       setTimeout(() => setGeoStatus('idle'), 3000);
     }
+  };
+
+  // Place search → jump there. Same downstream path as geolocation.
+  const onSearchResolved = (loc: { lat: number; lon: number }) => {
+    setStart({ lat: loc.lat, lon: loc.lon, source: 'search' });
   };
 
   // Mount the map directly. @vis.gl/react-maplibre's mapStyle diffing left
@@ -232,9 +286,10 @@ export default function Birdseye() {
         lonDeg={liveLon ?? start.lon}
         units={units}
         geoStatus={geoStatus}
-        hasGeo={start.source === 'geo'}
+        hasGeo={start.source !== 'fallback'}
         onLocate={onLocate}
         onUnitsChange={setUnits}
+        onSearchResolved={onSearchResolved}
       />
       <Slider value={altitudeKm} onChange={setAltitudeKm} units={units} />
     </div>

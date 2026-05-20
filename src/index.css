@@ -75,7 +75,10 @@ body {
   align-items: center;
   gap: 8px;
   margin-left: auto;
-  flex: 0 0 auto;
+  /* Grow on mobile so the search input has room to breathe. On desktop
+     the @media below shrinks it back to content-width. */
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 @media (min-width: 720px) {
@@ -86,7 +89,13 @@ body {
     padding: 12px 12px 12px 16px;
   }
   .topbar-headline {
+    /* Cap the headline so it can't crowd out the stats row on
+       narrower desktops. At 14px, ~22em ≈ 308px — enough for two
+       comfortable lines, which leaves room for the four-item stats
+       row + the search group without the stats wrapping to 4 lines
+       at tablet-ish widths. */
     flex: 0 1 auto;
+    max-width: 22em;
     text-align: left;
   }
   .topbar-row {
@@ -94,17 +103,18 @@ body {
   }
   .topbar-stats {
     flex: 1 1 auto;
-    justify-content: center;
     /* Roomier on desktop. Mobile stays at the tighter gap defined on the
        base .topbar-stats rule so the stats row doesn't wrap awkwardly on
-       narrow viewports. */
+       narrow viewports. Wrapped lines stay left-aligned so the second
+       row of stats lines up with the first under the headline. */
     gap: 4px 32px;
   }
   .topbar-actions {
     /* Match the inter-stat gap so the units toggle (now lives here on
-       desktop) sits visually paired with the locate button at the same
+       desktop) sits visually paired with the search group at the same
        rhythm as the stats. */
     gap: 28px;
+    flex: 0 0 auto;
   }
 }
 
@@ -136,23 +146,117 @@ body {
   opacity: 1;
 }
 
-/* Locate button. Outlined by default; on hover the whole pill inverts to
-   ink-on-paper. Disabled state (locating / denied) skips the hover swap. */
-.locate-button {
+/* Search group — the place-name input and the locate icon button packed
+   together as one unit. Mobile-first: fills the available actions width
+   so the input has room to type into. Desktop pins it to a sensible
+   fixed width so it doesn't sprawl across the row. */
+.topbar-search-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+@media (min-width: 720px) {
+  .topbar-search-group {
+    flex: 0 0 auto;
+    width: 280px;
+  }
+}
+
+/* Place-name search input. The form is position: relative so the
+   "Not found" sibling can float absolutely below the input without
+   pushing the icon button around. */
+.location-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.location-search-input {
   min-height: 30px;
+  width: 100%;
   padding: 3px 8px;
-  background: transparent;
-  border: 1px solid color-mix(in srgb, var(--ink) 75%, transparent);
-  color: var(--ink);
-  font-family:
-    'Iowan Old Style',
-    'Palatino Linotype',
-    Palatino,
-    Georgia,
-    serif;
+  /* Inverted by default — filled with ink, paper-colored text inside.
+     Gives the primary action high visual weight in the top bar.
+     Focus brings the bg to a slightly hotter mix so the active state
+     is felt without changing layout. */
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  color: var(--paper);
+  font-family: inherit;
   font-size: 12px;
   letter-spacing: 0.2px;
-  user-select: none;
+  outline: none;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease;
+  -webkit-appearance: none;
+  appearance: none;
+  caret-color: var(--paper);
+}
+.location-search-input::placeholder {
+  color: var(--paper);
+  opacity: 0.65;
+}
+.location-search-input::selection {
+  background: color-mix(in srgb, var(--paper) 35%, transparent);
+  color: var(--paper);
+}
+.location-search-input:focus {
+  /* Inset paper-colored ring — visible against the dark fill without
+     pulling in a new color or changing layout. */
+  box-shadow: inset 0 0 0 1px var(--paper);
+}
+.location-search-input:disabled {
+  opacity: 0.55;
+}
+/* Strip the WebKit decoration so the input matches the locate button's
+   clean rectangle. */
+.location-search-input::-webkit-search-cancel-button,
+.location-search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.location-search-status {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+  color: var(--ink);
+  background: var(--paper);
+  padding: 2px 6px;
+  border: 1px solid color-mix(in srgb, var(--ink) 75%, transparent);
+  opacity: 0;
+  transition: opacity 150ms ease;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 3;
+}
+.location-search-status[data-visible='true'] {
+  opacity: 0.85;
+}
+
+/* Locate icon button — fixed 30×30 pill with the surveyor reticle inside.
+   Inverted by default to match the search input and pop in the top bar;
+   hover lifts to outlined (paper bg + ink stroke). The SVG uses
+   currentColor, so the swap carries the crosshair along automatically.
+   `data-status` drives the locating pulse and the denied dim. */
+.locate-button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  flex: 0 0 auto;
   transition:
     background 150ms ease,
     color 150ms ease,
@@ -160,7 +264,24 @@ body {
     opacity 200ms ease;
 }
 .locate-button:hover:not(:disabled) {
-  background: var(--ink);
-  color: var(--paper);
+  background: transparent;
+  color: var(--ink);
   border-color: var(--ink);
+}
+.locate-button[data-status='locating'] {
+  cursor: wait;
+  animation: locate-pulse 1.2s ease-in-out infinite;
+}
+.locate-button[data-status='denied'] {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+@keyframes locate-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
 }
